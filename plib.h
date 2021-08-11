@@ -2,7 +2,8 @@
 #include <vector>
 
 static const float radius = 5;	
-static const float air_damping = 100;
+static const float gravity = -9.81;
+static const float air_damping = 10;
 static const float elast_damping = 500;
 
 struct V2{
@@ -18,8 +19,9 @@ struct V2{
 
 struct Material{
 	
-	float D;			// density
-	float E;			// modulus of elasticity	
+	float density;			// density
+	float elastic;			// modulus of elasticity
+	float damping;	
 };
 
 
@@ -29,7 +31,6 @@ public:
 
 	V2 		pos;	
 	V2 		vel;
-	V2 		acc;
 	V2		force;
 	float 	k;
 	float	m;
@@ -43,9 +44,9 @@ public:
 	
 	Node* n0;
 	Node* n1;
-	float l;
-	float k;
-	float f;
+	float l;			// length at 0 stress
+	float k;			// spring constant
+	float f;			// current axial force in bar
 };
 
 

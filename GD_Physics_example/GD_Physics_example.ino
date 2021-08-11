@@ -16,8 +16,9 @@ void setup() {
   GD.BlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
 
   //setup material
-  rubber.D = 1; //??
-  rubber.E = 100000; //??
+  rubber.density = 1; //??
+  rubber.elastic = 100000; //??
+  rubber.damping = 0;
 
 
 
@@ -38,8 +39,8 @@ void loop() {
     
   for(int i = 0; i < 100; i++)
   {
-    model.Step(1.0/2000.0);
-    model.Collisions();    
+    model.Collisions(); 
+    model.Step(1.0/2000.0);       
   }
   
   //model.MapNodes(&debug_point);

@@ -38,7 +38,6 @@ class DebugPoint : public NodeFunctor {
 public:
   void operator()(Node* n){
     Serial.print("\n"); Serial.print("node = "); Serial.print((int)n); Serial.print("\n");    
-    Serial.print("acc = "); Serial.print(n->acc.x); Serial.print(", "); Serial.print(n->acc.y); Serial.print("\n");
     Serial.print("vel = "); Serial.print(n->vel.x); Serial.print(", "); Serial.print(n->vel.y); Serial.print("\n");
     Serial.print("pos = "); Serial.print(n->pos.x); Serial.print(", "); Serial.print(n->pos.y); Serial.print("\n");      
   }

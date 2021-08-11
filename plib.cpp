@@ -25,27 +25,29 @@ V2 V2::Unit(){
 
 
 Node::Node(float x, float y, Material* mat){
-	pos.x = x; pos.y = y; k = mat->E; 
+	pos.x = x; pos.y = y; k = mat->elastic; 
 	force.x = 0; force.y = 0;
-	acc.x = 0; acc.y = 0;
 	vel.x = 0; vel.y = 0; 
-	m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->D;
+	m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
 }
 
 
 float Bar::DampingForce(){
 	V2 rel_v;
+	V2 rel_p;
+	rel_p.x = n1->pos.x - n0->pos.x;
+	rel_p.y = n1->pos.y - n0->pos.y;
 	rel_v.x = n1->vel.x - n0->vel.x;
 	rel_v.y = n1->vel.y - n0->vel.y;
-	return elast_damping * rel_v.Mag();
+
+	return elast_damping * rel_v.Dot(rel_p);
 }
 
 // +F = tension, -F = compression
 float Bar::Force(V2& v){
 	float l_ = n0->pos.Distance(n1->pos); // current length
 	float def = l_ - l; // current deflection
-	float f_dmp = DampingForce();
-	f = (def * k) + f_dmp;  // save f for graphics
+	f = (def * k) + DampingForce();// save f for graphics
 	v.x = f * (n1->pos.x - n0->pos.x) / l_;
 	v.y = f * (n1->pos.y - n0->pos.y) / l_;
 	return f;
@@ -84,7 +86,7 @@ Model::~Model(){
 }	
 
 void Model::Step(float t){
-	// forces from bars
+	// apply forces from bars
 	std::vector<Bar*>::iterator b_itr;
 	for(b_itr = bars.begin(); b_itr != bars.end(); b_itr++){
 		V2 f;
@@ -97,22 +99,23 @@ void Model::Step(float t){
 
 	// node dynamics for  t step
 	std::vector<Node*>::iterator itr;
-	for(itr = nodes.begin(); itr != nodes.end(); itr++){
-		// update velocity for next step
-		(*itr)->vel.x += (*itr)->acc.x * t;
-		(*itr)->vel.y += (*itr)->acc.y * t;
+	for(itr = nodes.begin(); itr != nodes.end(); itr++){		
 
-		// apply velocity damping
+		// apply nodal velocity damping
 		(*itr)->force.x -= (*itr)->vel.x * air_damping;
 		(*itr)->force.y -= (*itr)->vel.y * air_damping;
 
 		// update acceleration
-		(*itr)->acc.x = ((*itr)->force.x / (*itr)->m);
-		(*itr)->acc.y = ((*itr)->force.y / (*itr)->m) - 9.81;
+		float acc_x = ((*itr)->force.x / (*itr)->m);
+		float acc_y = ((*itr)->force.y / (*itr)->m) + gravity;
+
+		// update velocity for next step
+		(*itr)->vel.x += acc_x * t;
+		(*itr)->vel.y += acc_y * t;
 
 		// update position
-		(*itr)->pos.x += ((*itr)->vel.x * t) + (((*itr)->acc.x * t * t) / 2);
-		(*itr)->pos.y += ((*itr)->vel.y * t) + (((*itr)->acc.y * t * t) / 2);	
+		(*itr)->pos.x += ((*itr)->vel.x * t);
+		(*itr)->pos.y += ((*itr)->vel.y * t);
 	
 	}
 }
