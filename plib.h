@@ -7,10 +7,13 @@ static const float air_damping = 10;
 static const float elast_damping = 500;
 
 struct V2{
-	float Distance(V2& v);
-	float Mag();
-	float Dot(V2& v);
-	V2	  Unit();
+			V2(){;}
+			V2(float _x, float _y){x = _x; y = _y;}
+	float 	Distance(const V2& v);
+	float 	Mag();
+	float 	Dot(const V2& v);
+	V2	  	Unit();
+	V2		operator-();
 
 	float x;
 	float y;
@@ -27,8 +30,8 @@ struct Material{
 
 class Node{
 public:
-	Node(float x, float y, Material* m);
-
+			
+	float	ApplyDampedForce(const V2& f);
 	V2 		pos;	
 	V2 		vel;
 	V2		force;
@@ -75,7 +78,7 @@ public:
 	void	SetModel(float w, float h);
 
 	Node* 	AddNode(float x, float y, Material* m);
-	Bar*	AddBar(Node* n0, Node* n1, float k);
+	Bar*	AddBar(Node* n0, Node* n1, Material* m);
 	void	Step(float t);
 	void	Collisions();
 

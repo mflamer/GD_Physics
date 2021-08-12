@@ -2,7 +2,7 @@
 #include <algorithm>
 
 
-float V2::Distance(V2& v)
+float V2::Distance(const V2& v)
 { 
 	return sqrt(pow(x - v.x, 2) + pow(y - v.y, 2));
 }
@@ -11,7 +11,7 @@ float V2::Mag(){
 	return sqrt(x * x + y * y);
 }
 
-float V2::Dot(V2& v){
+float V2::Dot(const V2& v){
 	return (x * v.x) + (y * v.y);
 }
 
@@ -23,12 +23,20 @@ V2 V2::Unit(){
 	return u;
 }
 
+V2	V2::operator-(){
+	V2 result;
+	result.x = -x; 
+	result.y = -y;
+	return result;
+	}
 
-Node::Node(float x, float y, Material* mat){
-	pos.x = x; pos.y = y; k = mat->elastic; 
-	force.x = 0; force.y = 0;
-	vel.x = 0; vel.y = 0; 
-	m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
+float Node::ApplyDampedForce(const V2& f){
+	float f_damp = elast_damping * vel.Dot(f.Unit());
+	float f_damp_x = f_damp * f.x / f.Mag();
+	float f_damp_y = f_damp * f.y / f.Mag();
+	force.x += (f.x - f_damp_x);
+	force.y += (f.y - f_damp_y);
+	return f_damp_y;
 }
 
 
@@ -53,17 +61,19 @@ float Bar::Force(V2& v){
 	return f;
 }
 
-Node* Model::AddNode(float x, float y, Material* m){
-	Node* n = new Node(x, y, m);
+Node* Model::AddNode(float x, float y, Material* mat){
+	Node* n = new Node();
+	n->pos.x = x; n->pos.y = y; n->k = mat->elastic; 	 
+	n->m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
 	nodes.push_back(n);
 	return n;
 }
 
-Bar* Model::AddBar(Node* n0, Node* n1, float k){
+Bar* Model::AddBar(Node* n0, Node* n1, Material* m){
 	Bar* b = new Bar();
 	b->n0 = n0;
 	b->n1 = n1;
-	b->k = k;
+	b->k = m->elastic;
 	b->l = n0->pos.Distance(n1->pos);
 	bars.push_back(b);
 	return b;
@@ -134,27 +144,27 @@ void Model::Collisions(){
 			if((*m)->pos.x - (*n)->pos.x > (radius * 2)) break;
 			float d = (*m)->pos.Distance((*n)->pos);
 			if(d < radius * 2){
-				float f = ((2 * radius) - d) * ((*m)->k + (*n)->k) * 0.5;  
-				float fx = f * (((*m)->pos.x - (*n)->pos.x) / d);
-				float fy = f * (((*m)->pos.y - (*n)->pos.y) / d); 
-				(*m)->force.x += fx;
-				(*m)->force.y += fy;
-				(*n)->force.x -= fx;
-				(*n)->force.y -= fy;
+				float f = ((2 * radius) - d) * ((*m)->k + (*n)->k) * 0.5;
+				V2 col_f;  
+				col_f.x = f * (((*m)->pos.x - (*n)->pos.x) / d);
+				col_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
+
+				(*m)->ApplyDampedForce(col_f);
+				(*m)->ApplyDampedForce(-col_f);
 			}
 		}
 
 		// test left and right model edges
 		float dx_l = (-width / 2) - ((*n)->pos.x - radius);
 		float dx_r = (width / 2) - ((*n)->pos.x + radius);		
-		if(dx_l > 0){(*n)->force.x += dx_l * (*n)->k;}
-		if(dx_r < 0){(*n)->force.x += dx_r * (*n)->k;}
+		if(dx_l > 0){(*n)->ApplyDampedForce(V2(dx_l * (*n)->k, 0));}
+		if(dx_r < 0){(*n)->ApplyDampedForce(V2(dx_r * (*n)->k, 0));}
 
 		// test top and bottom model edges
 		float dy_b = (-height / 2) - ((*n)->pos.y - radius);
 		float dy_t = (height / 2) - ((*n)->pos.y + radius);		
-		if(dy_b > 0){(*n)->force.y += dy_b * (*n)->k;}
-		if(dy_t < 0){(*n)->force.y += dy_t * (*n)->k;}
+		if(dy_b > 0){(*n)->ApplyDampedForce(V2(0, dy_b * (*n)->k));}
+		if(dy_t < 0){(*n)->ApplyDampedForce(V2(0, dy_t * (*n)->k));}
 		
 
 	}
