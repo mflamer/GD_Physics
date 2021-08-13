@@ -85,26 +85,26 @@ void DrawBlock(float x, float y, float w, float h){
   Node* n8 = model.AddNode(x+(3*w),   y+h, &rubber); 
   Node* n9 = model.AddNode(x+(4*w),   y+h, &rubber);
 
-  model.AddBar(n0, n1, &rubber);
-  model.AddBar(n1, n2, &rubber);
-  model.AddBar(n2, n3, &rubber);
-  model.AddBar(n3, n4, &rubber);
+  model.AddBar(n0, n1);
+  model.AddBar(n1, n2);
+  model.AddBar(n2, n3);
+  model.AddBar(n3, n4);
 
-  model.AddBar(n5, n6, &rubber);
-  model.AddBar(n6, n7, &rubber);
-  model.AddBar(n7, n8, &rubber);
-  model.AddBar(n8, n9, &rubber);
+  model.AddBar(n5, n6);
+  model.AddBar(n6, n7);
+  model.AddBar(n7, n8);
+  model.AddBar(n8, n9);
 
-  model.AddBar(n0, n5, &rubber);
-  model.AddBar(n1, n6, &rubber);
-  model.AddBar(n2, n7, &rubber);
-  model.AddBar(n3, n8, &rubber);
-  model.AddBar(n4, n9, &rubber);
+  model.AddBar(n0, n5);
+  model.AddBar(n1, n6);
+  model.AddBar(n2, n7);
+  model.AddBar(n3, n8);
+  model.AddBar(n4, n9);
 
-  model.AddBar(n0, n6, &rubber);
-  model.AddBar(n1, n7, &rubber);
-  model.AddBar(n2, n8, &rubber);
-  model.AddBar(n3, n9, &rubber);
+  model.AddBar(n0, n6);
+  model.AddBar(n1, n7);
+  model.AddBar(n2, n8);
+  model.AddBar(n3, n9);
 }
 
 void DrawNodes(int n){

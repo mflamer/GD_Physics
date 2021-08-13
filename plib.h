@@ -43,11 +43,11 @@ public:
 class Bar{
 public:
 	float		Force(V2& v);
-	float		DampingForce();		
+	
+	V2			Dir();	
 	
 	Node* 		n0;
-	Node* 		n1;
-	Material*	mat;
+	Node* 		n1;	
 	float 		l;			// length at 0 stress
 	float 		f;			// current axial force in bar
 };
@@ -78,7 +78,7 @@ public:
 	void	SetModel(float w, float h, float r);
 
 	Node* 	AddNode(float x, float y, Material* m);
-	Bar*	AddBar(Node* n0, Node* n1, Material* m);
+	Bar*	AddBar(Node* n0, Node* n1);
 	void	Step(float t);
 	void	Collisions();
 

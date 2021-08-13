@@ -39,23 +39,29 @@ float Node::ApplyDampedForce(const V2& f){
 	return f_damp_y;
 }
 
-
-float Bar::DampingForce(){
-	V2 rel_v;
-	V2 rel_p;
-	rel_p.x = n1->pos.x - n0->pos.x;
-	rel_p.y = n1->pos.y - n0->pos.y;
-	rel_v.x = n1->vel.x - n0->vel.x;
-	rel_v.y = n1->vel.y - n0->vel.y;
-
-	return mat->damping * rel_v.Dot(rel_p);
+V2	Bar::Dir(){
+	V2 dir;
+	dir.x = n1->pos.x - n0->pos.x;
+	dir.y = n1->pos.y - n0->pos.y;
+	return dir; 
 }
+
 
 // +F = tension, -F = compression
 float Bar::Force(V2& v){
+	// bar force
+	float k = (n0->mat->spring + n1->mat->spring) * 0.5;
 	float l_ = n0->pos.Distance(n1->pos); // current length
 	float def = l_ - l; // current deflection
-	f = (def * mat->spring) + DampingForce();// save f for graphics
+	
+	// bar velocity damping
+	float damp = (n0->mat->damping + n1->mat->damping) * 0.5;
+	V2 rel_v;	
+	rel_v.x = n1->vel.x - n0->vel.x;
+	rel_v.y = n1->vel.y - n0->vel.y;
+
+	// apply to bar
+	f = (def * k) + (damp * rel_v.Dot(Dir()));// save f for graphics
 	v.x = f * (n1->pos.x - n0->pos.x) / l_;
 	v.y = f * (n1->pos.y - n0->pos.y) / l_;
 	return f;
@@ -69,11 +75,10 @@ Node* Model::AddNode(float x, float y, Material* m){
 	return n;
 }
 
-Bar* Model::AddBar(Node* n0, Node* n1, Material* m){
+Bar* Model::AddBar(Node* n0, Node* n1){
 	Bar* b = new Bar();
 	b->n0 = n0;
 	b->n1 = n1;
-	b->mat = m;
 	b->l = n0->pos.Distance(n1->pos);
 	bars.push_back(b);
 	return b;

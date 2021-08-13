@@ -13,7 +13,7 @@ void setup() {
   GD.cmd_loadimage(0, 0);
   GD.load("g_sphere.jpg");
 
-  GD.BlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
+  
 
   //setup material
   rubber.mass = 400; //??
