@@ -150,7 +150,7 @@ void Model::Collisions(){
 				col_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
 
 				(*m)->ApplyDampedForce(col_f);
-				(*m)->ApplyDampedForce(-col_f);
+				(*n)->ApplyDampedForce(-col_f);
 			}
 		}
 

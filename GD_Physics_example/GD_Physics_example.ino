@@ -25,9 +25,9 @@ void setup() {
   //setup model
   model.SetModel(GD.w, GD.h);
 
-  // DrawBlock(-30, 120, 12, 12);
-  // DrawBlock(0, 100, 12, 12);
-  // DrawBlock(30, 80, 12, 12);
+  DrawBlock(-30, 120, 12, 12);
+  DrawBlock(0, 100, 12, 12);
+  DrawBlock(30, 80, 12, 12);
 
   DrawNodes(16);
 
