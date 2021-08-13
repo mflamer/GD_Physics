@@ -16,14 +16,14 @@ void setup() {
   GD.BlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA);
 
   //setup material
-  rubber.density = 1; //??
-  rubber.elastic = 100000; //??
+  rubber.mass = 400; //??
+  rubber.spring = 100000; //??
   rubber.damping = 500;
 
 
 
   //setup model
-  model.SetModel(GD.w, GD.h);
+  model.SetModel(GD.w, GD.h, 5);
 
   DrawBlock(-30, 120, 12, 12);
   DrawBlock(0, 100, 12, 12);
@@ -49,7 +49,7 @@ void loop() {
   GD.Clear();
   GD.ColorRGB(30,30,30);
   GD.Begin(POINTS);
-  GD.PointSize(int((radius * scale) + 0.5));
+  GD.PointSize(int((5 * scale) + 0.5));
   //GD.Begin(BITMAPS);
 
 

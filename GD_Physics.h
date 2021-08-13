@@ -5,7 +5,7 @@ float scale = 16;//  subpix / m
 float bar_k = 50000;
 
  
-class DrawPoint : public NodeFunctor {
+class DrawPoint : public NodeFunct {
 public:
   void operator()(Node* n){
     int xf = int(((n->pos.x * scale) + 0.5) + (GD.w / 2)*16); 
@@ -15,7 +15,7 @@ public:
   }
 };
 
-class DrawBar : public BarFunctor {
+class DrawBar : public BarFunct {
 public:
   void operator()(Bar* b){
     int x0 = int(((b->n0->pos.x * scale) + 0.5) + (GD.w / 2)*16); 
@@ -34,7 +34,7 @@ public:
   }
 };
 
-class DebugPoint : public NodeFunctor {
+class DebugPoint : public NodeFunct {
 public:
   void operator()(Node* n){
     Serial.print("\n"); Serial.print("node = "); Serial.print((int)n); Serial.print("\n");    
@@ -43,7 +43,7 @@ public:
   }
 };
 
-class DebugBar : public BarFunctor {
+class DebugBar : public BarFunct {
 public:
   void operator()(Bar* b){
       Serial.print("f = "); Serial.print(b->f); Serial.print("\n");
