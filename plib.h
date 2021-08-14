@@ -9,9 +9,9 @@ struct V2{
 			V2(){;}
 			V2(float _x, float _y){x = _x; y = _y;}
 	float 	Distance(const V2& v);
-	float 	Mag();
+	float 	Mag() const;
 	float 	Dot(const V2& v);
-	V2	  	Unit();
+	V2	  	Unit() const ;
 	V2		operator-();
 
 	float x;
@@ -88,6 +88,8 @@ public:
 	void	Step(float t);
 	void	Collisions();
 
+	int		SizeNodes(){return nodes.size();}
+	Node*	GetNodeIdx(int i){return nodes.at(i);}
 
 	void 	MapNodes(NodeFunct* f);
 	void 	MapBars(BarFunct* f);

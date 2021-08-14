@@ -1,5 +1,6 @@
 #include "plib.h"
 #include <algorithm>
+#include <stdio.h>
 
 
 float V2::Distance(const V2& v)
@@ -7,7 +8,7 @@ float V2::Distance(const V2& v)
 	return sqrt(pow(x - v.x, 2) + pow(y - v.y, 2));
 }
 
-float V2::Mag(){
+float V2::Mag() const {
 	return sqrt(x * x + y * y);
 }
 
@@ -15,7 +16,7 @@ float V2::Dot(const V2& v){
 	return (x * v.x) + (y * v.y);
 }
 
-V2 V2::Unit(){
+V2 V2::Unit() const {
 	V2 u;
 	float m = Mag(); 
 	u.x = x / m;
@@ -114,8 +115,8 @@ void Model::Step(float t){
 	for(b_itr = bars.begin(); b_itr != bars.end(); b_itr++){
 		float bf = (*b_itr)->Force();
 		// test for bar yield and remove if so
-		if(bf > (*b_itr)->Yield_T() | bf < (*b_itr)->Yield_C()) {
-			//delete *b_itr;
+		if((bf > (*b_itr)->Yield_T()) | (bf < (*b_itr)->Yield_C())) {
+			delete *b_itr;
 			b_itr = bars.erase(b_itr);
 			if(b_itr == bars.end()) break;
 		}
@@ -206,3 +207,31 @@ void Model::MapBars(BarFunct* f){
 		(*f)(*b);
 	}
 }
+
+// void Model::Import(const char* file_name, Material* m){
+// 	FILE* pFile;
+//   	pFile = fopen (file_name, "r");
+//   	if (pFile!=NULL)
+//   	{
+//   		int base_idx = nodes.size();
+// 		char line[64];
+// 		while(fgets(line , 64, pFile) != NULL){
+// 			if(line[0] == 'N'){ // parse node
+// 				float x;
+// 				float y;
+// 				sscanf(line, "N %f %f ", &x, &y);
+// 				AddNode(x, y, m);
+// 			}
+// 			else if(line[0] == 'B'){ // parse bar
+// 				int idx_n0;
+// 				int idx_n1;
+// 				sscanf(line, "B %i %i ", &idx_n0, &idx_n1);
+// 				Node* n0 = nodes.at(idx_n0 + base_idx);
+// 				Node* n1 = nodes.at(idx_n1 + base_idx);
+// 				AddBar(n0, n1);				
+// 			}
+// 		}
+
+//   		fclose (pFile);
+//   	}
+// }
