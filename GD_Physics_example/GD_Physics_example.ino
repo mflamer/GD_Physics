@@ -4,18 +4,12 @@
 #include <GD_Physics.h>
 
 
+
 void setup() {
-  //Serial.begin(115200);
-  //while (!Serial) { ;} // debug
+  // Serial.begin(115200);
+  // while (!Serial) { ;} // debug
 
-  GD.begin();
-
-  GD.cmd_loadimage(0, 0);
-  GD.load("g_sphere.jpg");
-
-  
-
-  //setup material
+   //setup material
   rubber.mass = 400; //??
   rubber.spring = 100000; //??
   rubber.damping = 500;
@@ -31,7 +25,27 @@ void setup() {
   DrawBlock(0, 100, 12, 12)->Fix_XY();
   DrawBlock(30, 80, 12, 12)->Fix_X();
 
-  DrawNodes(16);
+  //DrawNodes(16);
+
+  // if (!SD.begin(9)) {
+  //   Serial.println("initialization failed!");
+  //   while (1);
+  // }
+  // ImportMeshSD("parse_test.txt", &model, &rubber);
+
+
+  GD.begin();
+
+  // GD.cmd_loadimage(0, 0);
+  // GD.load("g_sphere.jpg");
+
+  // const byte* test_data = "N 100.0 100.0 N -25.25 77.0 B 0 1";
+  // ImportMeshBuffer(test_data, &model, &rubber);
+
+ 
+  
+
+  
 
 }
 
