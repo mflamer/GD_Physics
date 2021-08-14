@@ -30,13 +30,16 @@ V2	V2::operator-(){
 	return result;
 	}
 
-float Node::ApplyDampedForce(const V2& f){
+void Node::ApplyForce(float fx, float fy){
+	if(force.x != 0xFFFFFFFF) force.x += fx;
+	if(force.y != 0xFFFFFFFF) force.y += fy;
+}	
+
+void Node::ApplyDampedForce(const V2& f){
 	float f_damp = mat->damping * vel.Dot(f.Unit());
 	float f_damp_x = f_damp * f.x / f.Mag();
 	float f_damp_y = f_damp * f.y / f.Mag();
-	force.x += (f.x - f_damp_x);
-	force.y += (f.y - f_damp_y);
-	return f_damp_y;
+	ApplyForce(f.x - f_damp_x, f.y - f_damp_y);	
 }
 
 V2	Bar::Dir(){
@@ -48,7 +51,7 @@ V2	Bar::Dir(){
 
 
 // +F = tension, -F = compression
-float Bar::Force(V2& v){
+float Bar::Force(){
 	// bar force
 	float k = (n0->mat->spring + n1->mat->spring) * 0.5;
 	float l_ = n0->pos.Distance(n1->pos); // current length
@@ -60,12 +63,16 @@ float Bar::Force(V2& v){
 	rel_v.x = n1->vel.x - n0->vel.x;
 	rel_v.y = n1->vel.y - n0->vel.y;
 
-	// apply to bar
+	// apply to nodes
 	f = (def * k) + (damp * rel_v.Dot(Dir()));// save f for graphics
-	v.x = f * (n1->pos.x - n0->pos.x) / l_;
-	v.y = f * (n1->pos.y - n0->pos.y) / l_;
+	V2 F;
+	F.x = f * (n1->pos.x - n0->pos.x) / l_;
+	F.y = f * (n1->pos.y - n0->pos.y) / l_;
+	n0->ApplyForce(F.x, F.y);
+	n1->ApplyForce(-F.x, -F.y);
 	return f;
 }
+
 
 Node* Model::AddNode(float x, float y, Material* m){
 	Node* n = new Node();
@@ -105,33 +112,37 @@ void Model::Step(float t){
 	// apply forces from bars
 	std::vector<Bar*>::iterator b_itr;
 	for(b_itr = bars.begin(); b_itr != bars.end(); b_itr++){
-		V2 f;
-		(*b_itr)->Force(f);
-		(*b_itr)->n0->force.x += f.x;
-		(*b_itr)->n0->force.y += f.y;
-		(*b_itr)->n1->force.x -= f.x;
-		(*b_itr)->n1->force.y -= f.y;
+		float bf = (*b_itr)->Force();
+		// test for bar yield and remove if so
+		if(bf > (*b_itr)->Yield_T() | bf < (*b_itr)->Yield_C()) {
+			//delete *b_itr;
+			b_itr = bars.erase(b_itr);
+			if(b_itr == bars.end()) break;
+		}
 	}
 
 	// node dynamics for  t step
 	std::vector<Node*>::iterator itr;
-	for(itr = nodes.begin(); itr != nodes.end(); itr++){		
+	for(itr = nodes.begin(); itr != nodes.end(); itr++){	
 
-		// apply nodal velocity damping
-		(*itr)->force.x -= (*itr)->vel.x * fluid_damping;
-		(*itr)->force.y -= (*itr)->vel.y * fluid_damping;
-
-		// update acceleration
-		float acc_x = ((*itr)->force.x / (*itr)->mat->mass);
-		float acc_y = ((*itr)->force.y / (*itr)->mat->mass) + gravity;
-
-		// update velocity for next step
-		(*itr)->vel.x += acc_x * t;
-		(*itr)->vel.y += acc_y * t;
-
-		// update position
-		(*itr)->pos.x += ((*itr)->vel.x * t);
-		(*itr)->pos.y += ((*itr)->vel.y * t);
+		// step if component not locked
+		if((*itr)->force.x != 0xFFFFFFFF){
+			// apply nodal velocity damping
+			(*itr)->force.x -= (*itr)->vel.x * fluid_damping;
+			// update acceleration
+			float acc_x = ((*itr)->force.x / (*itr)->mat->mass);
+			// update velocity for next step
+			(*itr)->vel.x += acc_x * t;
+			// update position
+			(*itr)->pos.x += ((*itr)->vel.x * t);
+		}	
+		// do the same for y
+		if((*itr)->force.y != 0xFFFFFFFF){
+			(*itr)->force.y -= (*itr)->vel.y * fluid_damping;		
+			float acc_y = ((*itr)->force.y / (*itr)->mat->mass) + gravity;		
+			(*itr)->vel.y += acc_y * t;		
+			(*itr)->pos.y += ((*itr)->vel.y * t);
+		}		
 	
 	}
 }
@@ -142,8 +153,8 @@ void Model::Collisions(){
 	std::vector<Node*>::iterator m;
 	//clear forces
 	for(n = nodes.begin(); n != nodes.end(); n++){ 
-		(*n)->force.x = 0;
-		(*n)->force.y = 0;
+		if((*n)->force.x != 0xFFFFFFFF)(*n)->force.x = 0;
+		if((*n)->force.y != 0xFFFFFFFF)(*n)->force.y = 0;
 	}
 	for(n = nodes.begin(); n != nodes.end(); n++){
 		for(m = n + 1; m != nodes.end(); m++){
@@ -152,12 +163,12 @@ void Model::Collisions(){
 			if(d < radius * 2){
 				float avg_elasticity = ((*m)->mat->spring + (*n)->mat->spring) * 0.5;
 				float f = ((2 * radius) - d) * avg_elasticity;
-				V2 col_f;  
-				col_f.x = f * (((*m)->pos.x - (*n)->pos.x) / d);
-				col_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
+				V2 collision_f;  
+				collision_f.x = f * (((*m)->pos.x - (*n)->pos.x) / d);
+				collision_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
 
-				(*m)->ApplyDampedForce(col_f);
-				(*n)->ApplyDampedForce(-col_f);
+				(*m)->ApplyDampedForce(collision_f);
+				(*n)->ApplyDampedForce(-collision_f);
 			}
 		}
 

@@ -71,7 +71,7 @@ ArduinoDebuger printer;
 Model model(&printer);
 Material rubber;  
 
-void DrawBlock(float x, float y, float w, float h){
+Node* DrawBlock(float x, float y, float w, float h){
 
   Node* n0 = model.AddNode(x,         y, &rubber);
   Node* n1 = model.AddNode(x+(1*w),   y, &rubber);
@@ -105,6 +105,8 @@ void DrawBlock(float x, float y, float w, float h){
   model.AddBar(n1, n7);
   model.AddBar(n2, n8);
   model.AddBar(n3, n9);
+
+  return n0;
 }
 
 void DrawNodes(int n){

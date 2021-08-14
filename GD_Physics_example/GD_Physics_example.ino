@@ -19,15 +19,17 @@ void setup() {
   rubber.mass = 400; //??
   rubber.spring = 100000; //??
   rubber.damping = 500;
+  rubber.yield_t = 100000;
+  rubber.yield_c = -100000;
 
 
 
   //setup model
   model.SetModel(GD.w, GD.h, 5);
 
-  DrawBlock(-30, 120, 12, 12);
-  DrawBlock(0, 100, 12, 12);
-  DrawBlock(30, 80, 12, 12);
+  DrawBlock(-30, 120, 12, 12)->Fix_Y();
+  DrawBlock(0, 100, 12, 12)->Fix_XY();
+  DrawBlock(30, 80, 12, 12)->Fix_X();
 
   DrawNodes(16);
 

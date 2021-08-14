@@ -23,16 +23,20 @@ struct Material{
 	
 	float 		mass;			
 	float 		spring;			
-	float 		damping;	
+	float 		damping;
+	float		friction;	
 	float 		yield_t;	// (+) tensile yield strength
 	float 		yield_c;	// (-) compressive yield strength		
 };
 
 
 class Node{
-public:
-			
-	float		ApplyDampedForce(const V2& f);
+public:	
+	void		ApplyForce(float fx, float fy);
+	void		ApplyDampedForce(const V2& f);
+	void		Fix_X(){force.x = 0xFFFFFFFF;}
+	void		Fix_Y(){force.y = 0xFFFFFFFF;}
+	void		Fix_XY(){force.x = 0xFFFFFFFF; force.y = 0xFFFFFFFF;}
 	V2 			pos;	
 	V2 			vel;
 	V2			force;
@@ -42,7 +46,9 @@ public:
 
 class Bar{
 public:
-	float		Force(V2& v);
+	float		Force();	// calculate and apply bar force
+	float		Yield_T(){return (n0->mat->yield_t + n1->mat->yield_t) / 2;}
+	float		Yield_C(){return (n0->mat->yield_c + n1->mat->yield_c) / 2;}
 	
 	V2			Dir();	
 	
