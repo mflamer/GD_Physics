@@ -3,7 +3,7 @@
 #include <GD2.h>
 #include <GD_Physics.h>
 
-
+int t_start;
 
 void setup() {
   // Serial.begin(115200);
@@ -13,11 +13,14 @@ void setup() {
   GD.begin();
 
    //setup material
-  rubber.mass = 400; //??
-  rubber.spring = 300000; //??
-  rubber.damping = 400;
-  rubber.yield_t = 600000;
-  rubber.yield_c = -600000;
+  // r = 5 m
+  // A = 78.54 m2 
+  // V = 523.6 m3  
+  rubber.mass = 579958; // 1100 Kg/m3 
+  rubber.spring = 3927000000; // EA in Pa/m (A * 0.05GPa) 
+  rubber.damping = 1500000;       // Nm * m/s = Nm2/s ?  
+  rubber.yield_t = 1099560000; // N (A * 14MPa) 
+  rubber.yield_c = -1099560000;
 
 
 
@@ -41,13 +44,12 @@ void setup() {
 
   // GD.cmd_loadimage(0, 0);
   // GD.load("g_sphere.jpg");
-
-  //const unsigned char* test_data = "N 100.0 100.0 N -25.25 77.0 B 0 1";
+  
   #include "mesh.h"
   ImportMeshBuffer(test_data, &model, &rubber);
   
-
-  
+  //Node* n0 = model.AddNode(0, 0, &rubber);
+  t_start = millis();
 
 }
 
@@ -59,20 +61,26 @@ void loop() {
   //   float x = GD.inputs.x 
   // }
 
-  int time = micros(); 
+  int t_collide;
+  int t_force;
   for(int i = 0; i < 50; i++)
-  {    
+  {
+    t_collide = micros();    
     model.Collisions(); 
-    model.Step(1.0/1000.0);     
+    t_collide = micros() - t_collide;
+    t_force = micros();
+    model.Step(1.0/3000.0);  
+    t_force = micros() - t_force; 
   }
-  time = micros() - time;
-  Serial.print("Step = "); Serial.print(1000000 / time); Serial.print("\n");
   
+  Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
+  Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
   //model.MapNodes(&debug_point);
 
   GD.ClearColorRGB(0xe0e0e0);
   GD.Clear();
   GD.ColorRGB(30,30,30);
+  GD.cmd_number(40, 20, 23, OPT_CENTER, millis() - t_start);
   GD.Begin(POINTS);
   GD.PointSize(int((5 * scale) + 0.5));
   //GD.Begin(BITMAPS);

@@ -104,7 +104,7 @@ private:
 	float 				width;
 	float 				height;
 	float 				radius;	
-	float 				fluid_damping = 1;
+	float 				fluid_damping = 100;
 	Debuger* printer;
 	std::vector<Node*> 	nodes;
 	std::vector<Bar*> 	bars;

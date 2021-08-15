@@ -55,7 +55,7 @@ V2	Bar::Dir(){
 // +F = tension, -F = compression
 float Bar::Force(){
 	// bar force
-	float k = (n0->mat->spring + n1->mat->spring) * 0.5;
+	float k = ((n0->mat->spring + n1->mat->spring) * 0.5) / l;
 	float l_ = n0->pos.Distance(n1->pos); // current length
 	float def = l_ - l; // current deflection
 	
@@ -164,8 +164,8 @@ void Model::Collisions(){
 			if((*m)->pos.x - (*n)->pos.x > (radius * 2)) break;
 			float d = (*m)->pos.Distance((*n)->pos);
 			if(d < radius * 2){
-				float avg_elasticity = ((*m)->mat->spring + (*n)->mat->spring) * 0.5;
-				float f = ((2 * radius) - d) * avg_elasticity;
+				float k = (((*m)->mat->spring + (*n)->mat->spring) * 0.5) / radius;
+				float f = ((2 * radius) - d) * k;
 				V2 collision_f;  
 				collision_f.x = f * (((*m)->pos.x - (*n)->pos.x) / d);
 				collision_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
@@ -176,16 +176,17 @@ void Model::Collisions(){
 		}
 
 		// test left and right model edges
+		float k = (*n)->mat->spring / radius;
 		float dx_l = (-width / 2) - ((*n)->pos.x - radius);
 		float dx_r = (width / 2) - ((*n)->pos.x + radius);		
-		if(dx_l > 0){(*n)->ApplyDampedForce(V2(dx_l * (*n)->mat->spring, 0));}
-		if(dx_r < 0){(*n)->ApplyDampedForce(V2(dx_r * (*n)->mat->spring, 0));}
+		if(dx_l > 0){(*n)->ApplyDampedForce(V2(dx_l * k, 0));}
+		if(dx_r < 0){(*n)->ApplyDampedForce(V2(dx_r * k, 0));}
 
 		// test top and bottom model edges
 		float dy_b = (-height / 2) - ((*n)->pos.y - radius);
 		float dy_t = (height / 2) - ((*n)->pos.y + radius);		
-		if(dy_b > 0){(*n)->ApplyDampedForce(V2(0, dy_b * (*n)->mat->spring));}
-		if(dy_t < 0){(*n)->ApplyDampedForce(V2(0, dy_t * (*n)->mat->spring));}
+		if(dy_b > 0){(*n)->ApplyDampedForce(V2(0, dy_b * k));}
+		if(dy_t < 0){(*n)->ApplyDampedForce(V2(0, dy_t * k));}
 		
 
 	}
@@ -210,30 +211,3 @@ void Model::MapBars(BarFunct* f){
 	}
 }
 
-// void Model::Import(const char* file_name, Material* m){
-// 	FILE* pFile;
-//   	pFile = fopen (file_name, "r");
-//   	if (pFile!=NULL)
-//   	{
-//   		int base_idx = nodes.size();
-// 		char line[64];
-// 		while(fgets(line , 64, pFile) != NULL){
-// 			if(line[0] == 'N'){ // parse node
-// 				float x;
-// 				float y;
-// 				sscanf(line, "N %f %f ", &x, &y);
-// 				AddNode(x, y, m);
-// 			}
-// 			else if(line[0] == 'B'){ // parse bar
-// 				int idx_n0;
-// 				int idx_n1;
-// 				sscanf(line, "B %i %i ", &idx_n0, &idx_n1);
-// 				Node* n0 = nodes.at(idx_n0 + base_idx);
-// 				Node* n1 = nodes.at(idx_n1 + base_idx);
-// 				AddBar(n0, n1);				
-// 			}
-// 		}
-
-//   		fclose (pFile);
-//   	}
-// }
