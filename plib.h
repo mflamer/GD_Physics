@@ -8,10 +8,10 @@ static const float gravity = -9.81;
 struct V2{
 			V2(){;}
 			V2(float _x, float _y){x = _x; y = _y;}
-	float 	Distance(const V2& v);
-	float 	Mag() const;
-	float 	Dot(const V2& v);
-	V2	  	Unit() const ;
+	float 	Distance(V2& v);
+	float 	Mag();
+	float 	Dot(V2& v);
+	V2	  	Unit();
 	V2		operator-();
 
 	float x;
@@ -104,7 +104,7 @@ private:
 	float 				width;
 	float 				height;
 	float 				radius;	
-	float 				fluid_damping = 10;
+	float 				fluid_damping = 1;
 	Debuger* printer;
 	std::vector<Node*> 	nodes;
 	std::vector<Bar*> 	bars;

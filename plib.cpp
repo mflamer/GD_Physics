@@ -3,20 +3,20 @@
 #include <stdio.h>
 
 
-float V2::Distance(const V2& v)
+float V2::Distance(V2& v)
 { 
 	return sqrt(pow(x - v.x, 2) + pow(y - v.y, 2));
 }
 
-float V2::Mag() const {
+float V2::Mag(){
 	return sqrt(x * x + y * y);
 }
 
-float V2::Dot(const V2& v){
+float V2::Dot(V2& v){
 	return (x * v.x) + (y * v.y);
 }
 
-V2 V2::Unit() const {
+V2 V2::Unit(){
 	V2 u;
 	float m = Mag(); 
 	u.x = x / m;
@@ -37,7 +37,8 @@ void Node::ApplyForce(float fx, float fy){
 }	
 
 void Node::ApplyDampedForce(const V2& f){
-	float f_damp = mat->damping * vel.Dot(f.Unit());
+	V2 funit = f.Unit();
+	float f_damp = mat->damping * vel.Dot(funit);
 	float f_damp_x = f_damp * f.x / f.Mag();
 	float f_damp_y = f_damp * f.y / f.Mag();
 	ApplyForce(f.x - f_damp_x, f.y - f_damp_y);	
@@ -65,7 +66,8 @@ float Bar::Force(){
 	rel_v.y = n1->vel.y - n0->vel.y;
 
 	// apply to nodes
-	f = (def * k) + (damp * rel_v.Dot(Dir()));// save f for graphics
+	V2 dir = Dir();
+	f = (def * k) + (damp * rel_v.Dot(dir));// save f for graphics
 	V2 F;
 	F.x = f * (n1->pos.x - n0->pos.x) / l_;
 	F.y = f * (n1->pos.y - n0->pos.y) / l_;
@@ -114,7 +116,7 @@ void Model::Step(float t){
 	std::vector<Bar*>::iterator b_itr;
 	for(b_itr = bars.begin(); b_itr != bars.end(); b_itr++){
 		float bf = (*b_itr)->Force();
-		// test for bar yield and remove if so
+		//test for bar yield and remove if so
 		if((bf > (*b_itr)->Yield_T()) | (bf < (*b_itr)->Yield_C())) {
 			delete *b_itr;
 			b_itr = bars.erase(b_itr);

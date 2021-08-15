@@ -1,5 +1,5 @@
 #include <GD2.h>
-#include <SD.h>
+//#include <SD.h>
 #include <plib.h>
 #include <ByteStream.h>
 
@@ -28,7 +28,7 @@ public:
 		int red = b->f > 0 ? int(255 * (b->f / (2 * bar_k))) : 0;
 		int blu = b->f < 0 ? int(255 * (-(b->f) / (2 * bar_k))) : 0;
 
-		Serial.print(red); Serial.print("\n");
+		//Serial.print(red); Serial.print("\n");
 
 		GD.ColorRGB(red+20, 20, blu+20);
 		GD.Vertex2f(x0, y0);
@@ -128,54 +128,55 @@ void DrawNodes(int n){
 }
 
 
-void ImportMeshSD(const char* file_name, Model* model, Material* material){
-	File dataFile = SD.open(file_name, FILE_READ);
-    Serial.print("running the test \n");
-    Serial.print((int)dataFile);		
-	if(dataFile)
-	{
-		int base_idx = model->SizeNodes();
-        char c;
-    	do{
-            c = dataFile.read();
-            Serial.print(c);
-            if(c == 'N'){
-                float x = dataFile.parseFloat();
-                float y = dataFile.parseFloat();
-                Serial.print((int)model->AddNode(x, y, material));
-            }
-            else if(c == 'B'){
-                int idx_n0 = dataFile.parseInt();
-                int idx_n1 = dataFile.parseInt();             
-                Node* n0 = model->GetNodeIdx(idx_n0 + base_idx);
-                Node* n1 = model->GetNodeIdx(idx_n1 + base_idx);
-                 Serial.print((int)model->AddBar(n0, n1));       
-            }
-        }while(c != -1);
-		dataFile.close();
-	}
-}
+// void ImportMeshSD(const char* file_name, Model* model, Material* material){
+// 	File dataFile = SD.open(file_name, FILE_READ);
+//     Serial.print("running the test \n");
+//     Serial.print((int)dataFile);		
+// 	if(dataFile)
+// 	{
+// 		int base_idx = model->SizeNodes();
+//         char c;
+//     	do{
+//             c = dataFile.read();
+//             Serial.print(c);
+//             if(c == 'N'){
+//                 float x = dataFile.parseFloat();
+//                 float y = dataFile.parseFloat();
+//                 Serial.print((int)model->AddNode(x, y, material));
+//             }
+//             else if(c == 'B'){
+//                 int idx_n0 = dataFile.parseInt();
+//                 int idx_n1 = dataFile.parseInt();             
+//                 Node* n0 = model->GetNodeIdx(idx_n0 + base_idx);
+//                 Node* n1 = model->GetNodeIdx(idx_n1 + base_idx);
+//                  Serial.print((int)model->AddBar(n0, n1));       
+//             }
+//         }while(c != -1);
+// 		dataFile.close();
+// 	}
+// }
 
-void ImportMeshBuffer(const char* buff, Model* model, Material* material){           
+void ImportMeshBuffer(const unsigned char* buff, Model* model, Material* material){           
     if(buff)
     {
         ByteStream bs = ByteStream(buff, strlen(buff));
         int base_idx = model->SizeNodes();
-        Serial.print("bufflen = "); Serial.print(strlen(buff)); Serial.print("\n");
-        char c;
-        while(c = bs.read()){            
+        //Serial.print("base_idx = "); Serial.print(base_idx); Serial.print("\n");
+        char c = bs.read();
+        while(bs.available()){           
             if(c == 'N'){
                 float x = bs.parseFloat();
                 float y = bs.parseFloat();
-                Serial.print("node = "); Serial.print((int)model->AddNode(x, y, material)); Serial.print("\n");
+                model->AddNode(x, y, material);
             }
             else if(c == 'B'){
                 int idx_n0 = bs.parseInt();
                 int idx_n1 = bs.parseInt();             
                 Node* n0 = model->GetNodeIdx(idx_n0 + base_idx);
                 Node* n1 = model->GetNodeIdx(idx_n1 + base_idx);
-                Serial.print("bar = "); Serial.print((int)model->AddBar(n0, n1)); Serial.print("\n");   
+                model->AddBar(n0, n1);
             }
+            c = bs.read();
         };
     }
 }

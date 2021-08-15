@@ -9,21 +9,24 @@ void setup() {
   // Serial.begin(115200);
   // while (!Serial) { ;} // debug
 
+
+  GD.begin();
+
    //setup material
   rubber.mass = 400; //??
-  rubber.spring = 100000; //??
-  rubber.damping = 500;
-  rubber.yield_t = 100000;
-  rubber.yield_c = -100000;
+  rubber.spring = 300000; //??
+  rubber.damping = 400;
+  rubber.yield_t = 600000;
+  rubber.yield_c = -600000;
 
 
 
   //setup model
   model.SetModel(GD.w, GD.h, 5);
 
-  DrawBlock(-30, 120, 12, 12)->Fix_Y();
-  DrawBlock(0, 100, 12, 12)->Fix_XY();
-  DrawBlock(30, 80, 12, 12)->Fix_X();
+  //DrawBlock(-30, 120, 12, 12)->Fix_Y();
+  //DrawBlock(0, 100, 12, 12)->Fix_XY();
+  //DrawBlock(30, 80, 12, 12)->Fix_X();
 
   //DrawNodes(16);
 
@@ -34,15 +37,14 @@ void setup() {
   // ImportMeshSD("parse_test.txt", &model, &rubber);
 
 
-  GD.begin();
+  
 
   // GD.cmd_loadimage(0, 0);
   // GD.load("g_sphere.jpg");
 
-  // const byte* test_data = "N 100.0 100.0 N -25.25 77.0 B 0 1";
-  // ImportMeshBuffer(test_data, &model, &rubber);
-
- 
+  //const unsigned char* test_data = "N 100.0 100.0 N -25.25 77.0 B 0 1";
+  #include "mesh.h"
+  ImportMeshBuffer(test_data, &model, &rubber);
   
 
   
@@ -52,12 +54,19 @@ void setup() {
 
 
 void loop() {
-    
-  for(int i = 0; i < 100; i++)
-  {
+  // GD.get_inputs();
+  // if (GD.inputs.x != -32768) {
+  //   float x = GD.inputs.x 
+  // }
+
+  int time = micros(); 
+  for(int i = 0; i < 50; i++)
+  {    
     model.Collisions(); 
-    model.Step(1.0/2000.0);       
+    model.Step(1.0/1000.0);     
   }
+  time = micros() - time;
+  Serial.print("Step = "); Serial.print(1000000 / time); Serial.print("\n");
   
   //model.MapNodes(&debug_point);
 
