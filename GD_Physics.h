@@ -13,7 +13,7 @@ public:
 		int xf = int(((n->pos.x * scale) + 0.5) + (GD.w / 2)*16); 
 		int yf = int(((-1 * n->pos.y * scale) + 0.5) + (GD.h / 2)*16); 
 
-		GD.Vertex2f(xf, yf);
+		GD.Vertex2f(xf-80, yf-80);
 	}
 };
 
@@ -80,6 +80,7 @@ Material rubber;
 Material concrete;
 Material steel;
 Material wood;
+Material game_struct;
 
 
 
@@ -136,6 +137,9 @@ void DrawNodes(int n){
 		model.AddNode(-200 + i * 15, i * 5, &concrete);
 	}
 }
+
+
+
 
 
 // void ImportMeshSD(const char* file_name, Model* model, Material* material){

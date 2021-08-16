@@ -85,6 +85,7 @@ public:
 
 	Material	InitMaterial(float D, float E, float B, float F, float T, float C);
 	Node* 		AddNode(float x, float y, Material* m);
+	Node* 		AddNode(float x, float y, float vx, float vy, Material* m);
 	Bar*		AddBar(Node* n0, Node* n1);
 	void		Step(float t);
 	void		Collisions();

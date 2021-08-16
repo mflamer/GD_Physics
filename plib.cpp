@@ -48,7 +48,7 @@ V2	Bar::Dir(){
 	V2 dir;
 	dir.x = n1->pos.x - n0->pos.x;
 	dir.y = n1->pos.y - n0->pos.y;
-	return dir; 
+	return dir.Unit(); 
 }
 
 
@@ -82,6 +82,13 @@ Node* Model::AddNode(float x, float y, Material* m){
 	n->pos.x = x; n->pos.y = y; n->mat = m; 	 
 	//n->m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
 	nodes.push_back(n);
+	return n;
+}
+
+Node* Model::AddNode(float x, float y, float vx, float vy, Material* m){
+	Node* n = AddNode(x, y, m);
+	n->vel.x = vx;
+	n->vel.y = vy;
 	return n;
 }
 

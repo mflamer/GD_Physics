@@ -19,11 +19,13 @@ void setup() {
   // r = 5 m
   // A = 78.54 m2 
   // V = 523.6 m3  
-                               // D       E           B       F       T            C 
-  rubber    = model.InitMaterial(1100, 50000000,     8,     0,   14000000,   -14000000);
-  concrete  = model.InitMaterial(2300, 25000000000,  500,    0,   14000000,   -28000000);
-  steel     = model.InitMaterial(7840, 200000000000, 1000,    0,   400000000,  -400000000);
-  wood      = model.InitMaterial(450,  10000000000,  450,    0,   20000000,   -20000000);
+                               // D        E           B       F       T            C 
+  rubber    = model.InitMaterial(950,   50000000,      4,     0,   14000000,   -14000000);
+  concrete  = model.InitMaterial(2300,  25000000000,  400,   0,   14000000,   -28000000);
+  steel     = model.InitMaterial(7840,  200000000000, 1000,  0,   400000000,  -400000000);
+  wood      = model.InitMaterial(450,   10000000000,  450,   0,   20000000,   -20000000);
+
+  game_struct = model.InitMaterial(600,  100000000,      10,     0,   2000000,   -2000000);
 
   //rubber.mass       = 579958;       // 1100 Kg/m3 
   //rubber.spring     = 3927000000;   // EA in Pa/m (A * 0.05GPa) 
@@ -54,11 +56,13 @@ void setup() {
 
   
 
-  // GD.cmd_loadimage(0, 0);
-  // GD.load("g_sphere.jpg");
+  GD.cmd_loadimage(0, 0);
+  GD.load("block.jpg");
   
   #include "mesh.h"
-  ImportMeshBuffer(test_data, &model, &rubber);
+  ImportMeshBuffer(test_data, &model, &game_struct);
+
+  Node* bullet = model.AddNode(-200, 100, 90, 0, &steel);
   
   //Node* n0 = model.AddNode(-45, 100, &rubber);
   //Node* n1 = model.AddNode(-15, 100, &concrete);
@@ -94,11 +98,11 @@ void loop() {
 
   GD.ClearColorRGB(0xe0e0e0);
   GD.Clear();
-  GD.ColorRGB(30,30,30);
+  //GD.ColorRGB(30,30,30);
   GD.cmd_number(40, 20, 23, OPT_CENTER, millis() - t_start);
-  GD.Begin(POINTS);
-  GD.PointSize(int((5 * scale) + 0.5));
-  //GD.Begin(BITMAPS);
+  //GD.Begin(POINTS);
+  //GD.PointSize(int((5 * scale) + 0.5));
+  GD.Begin(BITMAPS);
 
 
   model.MapNodes(&dp);
