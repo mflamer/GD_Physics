@@ -12,20 +12,32 @@ void setup() {
 
   GD.begin();
 
-   //setup material
+   //setup model
+  model.SetModel(GD.w, GD.h, 5);
+
+  //setup materials
   // r = 5 m
   // A = 78.54 m2 
   // V = 523.6 m3  
-  rubber.mass = 579958; // 1100 Kg/m3 
-  rubber.spring = 3927000000; // EA in Pa/m (A * 0.05GPa) 
-  rubber.damping = 1500000;       // Nm * m/s = Nm2/s ?  
-  rubber.yield_t = 1099560000; // N (A * 14MPa) 
-  rubber.yield_c = -1099560000;
+                               // D       E           B       F       T            C 
+  rubber    = model.InitMaterial(1100, 50000000,     8,     0,   14000000,   -14000000);
+  concrete  = model.InitMaterial(2300, 25000000000,  500,    0,   14000000,   -28000000);
+  steel     = model.InitMaterial(7840, 200000000000, 1000,    0,   400000000,  -400000000);
+  wood      = model.InitMaterial(450,  10000000000,  450,    0,   20000000,   -20000000);
 
+  //rubber.mass       = 579958;       // 1100 Kg/m3 
+  //rubber.spring     = 3927000000;   // EA in Pa/m (A * 0.05GPa) 
+  //rubber.damping    = 1500000;      // Nm * m/s = Nm2/s ?  
+  //rubber.yield_t    = 1099560000;   // N (A * 14MPa) 
+  //rubber.yield_c    = -1099560000; 
 
+  // concrete.mass     = 1204280;       // 2300 Kg/m3 
+  // concrete.spring   = 1963500000000;   // EA in Pa/m (A * 25GPa) 
+  // concrete.damping  = 30000000;      // Nm * m/s = Nm2/s ?  
+  // concrete.yield_t  = 1099560000;   // 0.5 * yield_c 
+  // concrete.yield_c  = -2199120000;  // N (A * 28MPa) 
 
-  //setup model
-  model.SetModel(GD.w, GD.h, 5);
+ 
 
   //DrawBlock(-30, 120, 12, 12)->Fix_Y();
   //DrawBlock(0, 100, 12, 12)->Fix_XY();
@@ -48,7 +60,10 @@ void setup() {
   #include "mesh.h"
   ImportMeshBuffer(test_data, &model, &rubber);
   
-  //Node* n0 = model.AddNode(0, 0, &rubber);
+  //Node* n0 = model.AddNode(-45, 100, &rubber);
+  //Node* n1 = model.AddNode(-15, 100, &concrete);
+  //Node* n2 = model.AddNode(15,  100, &steel);
+  //Node* n3 = model.AddNode(45,  100, &wood);
   t_start = millis();
 
 }
@@ -73,8 +88,8 @@ void loop() {
     t_force = micros() - t_force; 
   }
   
-  Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
-  Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
+  //Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
+  //Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
   //model.MapNodes(&debug_point);
 
   GD.ClearColorRGB(0xe0e0e0);

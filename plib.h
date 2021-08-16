@@ -20,7 +20,6 @@ struct V2{
 
 
 struct Material{
-	
 	float 		mass;			
 	float 		spring;			
 	float 		damping;
@@ -81,18 +80,20 @@ public:
 	Model(Debuger* d); 
 	~Model();
 
-	void	SetModel(float w, float h, float r);
+	void		SetModel(float w, float h, float r);
 
-	Node* 	AddNode(float x, float y, Material* m);
-	Bar*	AddBar(Node* n0, Node* n1);
-	void	Step(float t);
-	void	Collisions();
 
-	int		SizeNodes(){return nodes.size();}
-	Node*	GetNodeIdx(int i){return nodes.at(i);}
-
-	void 	MapNodes(NodeFunct* f);
-	void 	MapBars(BarFunct* f);
+	Material	InitMaterial(float D, float E, float B, float F, float T, float C);
+	Node* 		AddNode(float x, float y, Material* m);
+	Bar*		AddBar(Node* n0, Node* n1);
+	void		Step(float t);
+	void		Collisions();
+	
+	int			SizeNodes(){return nodes.size();}
+	Node*		GetNodeIdx(int i){return nodes.at(i);}
+	
+	void 		MapNodes(NodeFunct* f);
+	void 		MapBars(BarFunct* f);
 
 private:
 
@@ -107,7 +108,7 @@ private:
 	float 				fluid_damping = 100;
 	Debuger* printer;
 	std::vector<Node*> 	nodes;
-	std::vector<Bar*> 	bars;
+	std::vector<Bar*> 	bars;	
 
 };
 

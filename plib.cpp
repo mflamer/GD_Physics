@@ -194,7 +194,18 @@ void Model::Collisions(){
 }
 
 
-
+Material Model::InitMaterial(float D, float E, float B, float F, float T, float C){
+	Material m;
+	float A = 3.14159265359 * pow(radius, 2);
+	float V = (4/3) * 3.14159265359 * pow(radius, 3);
+	m.mass = D * V;
+	m.spring = E * A;
+	m.damping = B * D * V;
+	m.friction = F;
+	m.yield_t = A * T;
+	m.yield_c = A * C; 
+	return m;
+}
 
 
 void Model::MapNodes(NodeFunct* f){

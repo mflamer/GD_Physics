@@ -73,7 +73,15 @@ DebugBar debug_bar;
 ArduinoDebuger printer;
 
 Model model(&printer);
-Material rubber;  
+
+ 
+
+Material rubber;
+Material concrete;
+Material steel;
+Material wood;
+
+
 
 Node* DrawBlock(float x, float y, float w, float h){
 
@@ -125,7 +133,7 @@ Node* DrawBlock(float x, float y, float w, float h){
 
 void DrawNodes(int n){
 	for(int i = 0; i < n; i++){
-		model.AddNode(-200 + i * 15, i * 5, &rubber);
+		model.AddNode(-200 + i * 15, i * 5, &concrete);
 	}
 }
 
