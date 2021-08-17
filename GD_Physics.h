@@ -3,27 +3,24 @@
 #include <plib.h>
 #include <ByteStream.h>
 
-float scale = 16;//  subpix / m 
-float bar_k = 50000;
-
  
 class DrawPoint : public NodeFunct {
 public:
 	void operator()(Node* n){
-		int xf = int(((n->pos.x * scale) + 0.5) + (GD.w / 2)*16); 
-		int yf = int(((-1 * n->pos.y * scale) + 0.5) + (GD.h / 2)*16); 
+		int xf = int(((n->pos.x * 64) + 0.5) + (GD.w / 2)*16); //!!!!fix scale
+		int yf = int(((-1 * n->pos.y * 64) + 0.5) + (GD.h / 2)*16); //!!!!fix scale
 
-		GD.Vertex2f(xf-80, yf-80);
+		GD.Vertex2f(xf, yf);
 	}
 };
 
 class DrawBar : public BarFunct {
 public:
 	void operator()(Bar* b){
-		int x0 = int(((b->n0->pos.x * scale) + 0.5) + (GD.w / 2)*16); 
-		int y0 = int(((-1 * b->n0->pos.y * scale) + 0.5) + (GD.h / 2)*16); 
-		int x1 = int(((b->n1->pos.x * scale) + 0.5) + (GD.w / 2)*16); 
-		int y1 = int(((-1 * b->n1->pos.y * scale) + 0.5) + (GD.h / 2)*16);
+		int x0 = int(((b->n0->pos.x * 64) + 0.5) + (GD.w / 2)*16); //!!!!fix scale
+		int y0 = int(((-1 * b->n0->pos.y * 64) + 0.5) + (GD.h / 2)*16); 
+		int x1 = int(((b->n1->pos.x * 64) + 0.5) + (GD.w / 2)*16); 
+		int y1 = int(((-1 * b->n1->pos.y * 64) + 0.5) + (GD.h / 2)*16);//!!!!fix scale
 
 		float lim_t = (b->n0->mat->yield_t + b->n1->mat->yield_t) / 2;
         float lim_c = (b->n0->mat->yield_c + b->n1->mat->yield_c) / 2;
@@ -84,19 +81,19 @@ Material game_struct;
 
 
 
-Node* DrawBlock(float x, float y, float w, float h){
+Node* DrawBlock(float x, float y, float w, float h, Material* m){
 
-	Node* n0 = model.AddNode(x,         y, &rubber);
-	Node* n1 = model.AddNode(x+(1*w),   y, &rubber);
-	Node* n2 = model.AddNode(x+(2*w),   y, &rubber);
-	Node* n3 = model.AddNode(x+(3*w),   y, &rubber); 
-	Node* n4 = model.AddNode(x+(4*w),   y, &rubber);
+	Node* n0 = model.AddNode(x,         y, m);
+	Node* n1 = model.AddNode(x+(1*w),   y, m);
+	Node* n2 = model.AddNode(x+(2*w),   y, m);
+	Node* n3 = model.AddNode(x+(3*w),   y, m); 
+	Node* n4 = model.AddNode(x+(4*w),   y, m);
 
-	Node* n5 = model.AddNode(x,         y+h, &rubber);
-	Node* n6 = model.AddNode(x+(1*w),   y+h, &rubber);
-	Node* n7 = model.AddNode(x+(2*w),   y+h, &rubber);
-	Node* n8 = model.AddNode(x+(3*w),   y+h, &rubber); 
-	Node* n9 = model.AddNode(x+(4*w),   y+h, &rubber);
+	Node* n5 = model.AddNode(x,         y+h, m);
+	Node* n6 = model.AddNode(x+(1*w),   y+h, m);
+	Node* n7 = model.AddNode(x+(2*w),   y+h, m);
+	Node* n8 = model.AddNode(x+(3*w),   y+h, m); 
+	Node* n9 = model.AddNode(x+(4*w),   y+h, m);
 
 	model.AddBar(n0, n1);
 	model.AddBar(n1, n2);

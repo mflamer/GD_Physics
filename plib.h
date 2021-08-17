@@ -1,16 +1,16 @@
 #include "math.h"
 #include <vector>
-
-//static const float radius = 5;	
+	
 static const float gravity = -9.81;
-//static const float elast_damping = 500;
+//float scale = 64;//  pix / m 
+
 
 struct V2{
 			V2(){;}
 			V2(float _x, float _y){x = _x; y = _y;}
 	float 	Distance(V2& v);
 	float 	Mag();
-	float 	Dot(V2& v);
+	float 	Dot(const V2& v);
 	V2	  	Unit();
 	V2		operator-();
 
@@ -80,7 +80,7 @@ public:
 	Model(Debuger* d); 
 	~Model();
 
-	void		SetModel(float w, float h, float r);
+	void		SetModel(float w, float h, float r, float s);
 
 
 	Material	InitMaterial(float D, float E, float B, float F, float T, float C);
@@ -105,9 +105,10 @@ private:
 
 	float 				width;
 	float 				height;
-	float 				radius;	
-	float 				fluid_damping = 100;
-	Debuger* printer;
+	float 				radius;
+	float				scale;
+	float 				fluid_damping = 15;
+	Debuger* 			printer;
 	std::vector<Node*> 	nodes;
 	std::vector<Bar*> 	bars;	
 

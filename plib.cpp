@@ -12,7 +12,7 @@ float V2::Mag(){
 	return sqrt(x * x + y * y);
 }
 
-float V2::Dot(V2& v){
+float V2::Dot(const V2& v){
 	return (x * v.x) + (y * v.y);
 }
 
@@ -37,11 +37,9 @@ void Node::ApplyForce(float fx, float fy){
 }	
 
 void Node::ApplyDampedForce(const V2& f){
-	V2 funit = f.Unit();
-	float f_damp = mat->damping * vel.Dot(funit);
-	float f_damp_x = f_damp * f.x / f.Mag();
-	float f_damp_y = f_damp * f.y / f.Mag();
-	ApplyForce(f.x - f_damp_x, f.y - f_damp_y);	
+	float dir = vel.Dot(f);
+	float cor = dir > 0 ? mat->damping : 1; 
+	ApplyForce(cor * f.x, cor * f.y);
 }
 
 V2	Bar::Dir(){
@@ -59,20 +57,20 @@ float Bar::Force(){
 	float l_ = n0->pos.Distance(n1->pos); // current length
 	float def = l_ - l; // current deflection
 	
-	// bar velocity damping
-	float damp = (n0->mat->damping + n1->mat->damping) * 0.5;
+	// bar relative velocity for damping
 	V2 rel_v;	
 	rel_v.x = n1->vel.x - n0->vel.x;
 	rel_v.y = n1->vel.y - n0->vel.y;
 
-	// apply to nodes
-	V2 dir = Dir();
-	f = (def * k) + (damp * rel_v.Dot(dir));// save f for graphics
-	V2 F;
-	F.x = f * (n1->pos.x - n0->pos.x) / l_;
-	F.y = f * (n1->pos.y - n0->pos.y) / l_;
-	n0->ApplyForce(F.x, F.y);
-	n1->ApplyForce(-F.x, -F.y);
+	// does the relative velocity match the direction of force?	
+	float dir = rel_v.Dot(Dir());
+	// coefficent of restitution
+	float cor = (dir < 0 & def > 0) | (dir > 0 & def < 0) ? (n0->mat->damping + n1->mat->damping) * 0.5 : 1; 
+	f = def * k * cor;
+	float fx = cor * f * (n1->pos.x - n0->pos.x) / l_;
+	float fy = cor * f * (n1->pos.y - n0->pos.y) / l_;
+	n0->ApplyForce(fx, fy);
+	n1->ApplyForce(-fx, -fy);
 	return f;
 }
 
@@ -105,10 +103,11 @@ Model::Model(Debuger* d){
 	printer = d;
 }
 
-void Model::SetModel(float w, float h, float r){
-	width = w;
-	height = h;
+void Model::SetModel(float w, float h, float r, float s){
+	width = w / (s/16);
+	height = h / (s/16);
 	radius = r;
+	scale = r;
 }
 
 Model::~Model(){
@@ -207,7 +206,7 @@ Material Model::InitMaterial(float D, float E, float B, float F, float T, float 
 	float V = (4/3) * 3.14159265359 * pow(radius, 3);
 	m.mass = D * V;
 	m.spring = E * A;
-	m.damping = B * D * V;
+	m.damping = B;
 	m.friction = F;
 	m.yield_t = A * T;
 	m.yield_c = A * C; 
