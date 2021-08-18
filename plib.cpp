@@ -3,6 +3,8 @@
 #include <stdio.h>
 
 
+Printer* Debug::print = 0;
+
 float V2::Distance(V2& v)
 { 
 	return sqrt(pow(x - v.x, 2) + pow(y - v.y, 2));
@@ -64,6 +66,8 @@ float Bar::Force(){
 
 	// does the relative velocity match the direction of force?	
 	float dir = rel_v.Dot(Dir());
+	
+	
 	// coefficent of restitution
 	float cor = (dir < 0 & def > 0) | (dir > 0 & def < 0) ? (n0->mat->damping + n1->mat->damping) * 0.5 : 1; 
 	f = def * k * cor;
@@ -75,7 +79,7 @@ float Bar::Force(){
 }
 
 
-Node* Model::AddNode(float x, float y, Material* m){
+Node* Model::AddNode(float x, float y, Material* m, int tag = 0){
 	Node* n = new Node();
 	n->pos.x = x; n->pos.y = y; n->mat = m; 	 
 	//n->m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
@@ -83,7 +87,7 @@ Node* Model::AddNode(float x, float y, Material* m){
 	return n;
 }
 
-Node* Model::AddNode(float x, float y, float vx, float vy, Material* m){
+Node* Model::AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0){
 	Node* n = AddNode(x, y, m);
 	n->vel.x = vx;
 	n->vel.y = vy;
@@ -99,8 +103,8 @@ Bar* Model::AddBar(Node* n0, Node* n1){
 	return b;
 }
 
-Model::Model(Debuger* d){	
-	printer = d;
+Model::Model(Printer* p){	
+	print = p;
 }
 
 void Model::SetModel(float w, float h, float r, float s){
@@ -114,6 +118,14 @@ Model::~Model(){
 	std::vector<Node*>::iterator itr;
 	for(itr = nodes.begin(); itr != nodes.end(); itr++){
 		delete *itr;
+	}
+	std::vector<Bar*>::iterator bitr;
+	for(bitr = bars.begin(); bitr != bars.end(); bitr++){
+		delete *bitr;
+	}
+	std::map<std::string, Material*>::iterator mitr;
+	for(mitr = materials.begin(); mitr != materials.end(); mitr++){
+		delete std::get<1>(*mitr);
 	}
 }	
 
@@ -200,17 +212,25 @@ void Model::Collisions(){
 }
 
 
-Material Model::InitMaterial(float D, float E, float B, float F, float T, float C){
-	Material m;
+Material* Model::AddMaterial(const char* N, float D, float E, float B, float F, float YT, float YC, float UT, float UC){
+	Material* m = new Material();
 	float A = 3.14159265359 * pow(radius, 2);
 	float V = (4/3) * 3.14159265359 * pow(radius, 3);
-	m.mass = D * V;
-	m.spring = E * A;
-	m.damping = B;
-	m.friction = F;
-	m.yield_t = A * T;
-	m.yield_c = A * C; 
+	m->mass = D * V;
+	m->spring = E * A;
+	m->damping = B;
+	m->friction = F;
+	m->yield_c = A * YC;
+	m->yield_t = A * YT;
+	m->ult_c = A * UC;
+	m->ult_t = A * UT;
+	materials.insert({N, m});	 
 	return m;
+}
+
+Material* Model::GetMaterial(const char* name = NULL){
+	if(name) return materials.at(name);
+	else return std::get<1>(*(materials.begin()));
 }
 
 
@@ -227,4 +247,5 @@ void Model::MapBars(BarFunct* f){
 		(*f)(*b);
 	}
 }
+
 

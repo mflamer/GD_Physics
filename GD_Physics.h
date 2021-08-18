@@ -24,8 +24,8 @@ public:
 
 		float lim_t = (b->n0->mat->yield_t + b->n1->mat->yield_t) / 2;
         float lim_c = (b->n0->mat->yield_c + b->n1->mat->yield_c) / 2;
-        int red = b->f > 0 ? int(255 * (b->f / lim_t)) : 0;
-		int blu = b->f < 0 ? int(255 * (b->f / lim_c)) : 0;
+        int red = b->f > 0 ? int(255 * (b->f / (.3 * lim_t))) : 0;
+		int blu = b->f < 0 ? int(255 * (b->f / (.3 * lim_c))) : 0;
 
 		//Serial.print(red); Serial.print("\n");
 
@@ -51,7 +51,7 @@ public:
 		}
 	};
 
-class ArduinoDebuger : public Debuger {
+class ArduinoPrinter : public Printer {
 	public:
 		void operator()(char* s){Serial.print(s);}
 		void operator()(float f){Serial.print(f);}
@@ -67,17 +67,21 @@ DrawBar draw_bar;
 DebugPoint debug_point;
 DebugBar debug_bar;
 
-ArduinoDebuger printer;
 
-Model model(&printer);
+Printer* p = new ArduinoPrinter;
+Model model(p);
 
  
 
-Material rubber;
-Material concrete;
-Material steel;
-Material wood;
-Material game_struct;
+Material*   rubber;
+Material*   concrete;
+Material*   steel;
+Material*   wood;
+Material*   _rubber;
+Material*   _concrete;
+Material*   _steel;
+Material*   _wood;
+Material*   game_struct;
 
 
 
@@ -131,7 +135,7 @@ Node* DrawBlock(float x, float y, float w, float h, Material* m){
 
 void DrawNodes(int n){
 	for(int i = 0; i < n; i++){
-		model.AddNode(-200 + i * 15, i * 5, &concrete);
+		model.AddNode(-200 + i * 15, i * 5, concrete);
 	}
 }
 
@@ -167,25 +171,36 @@ void DrawNodes(int n){
 // 	}
 // }
 
-void ImportMeshBuffer(const unsigned char* buff, Model* model, Material* material){           
+void ImportMeshBuffer(const unsigned char* buff, Model* model){          
     if(buff)
     {
         ByteStream bs = ByteStream(buff, strlen(buff));
         int base_idx = model->SizeNodes();
-        //Serial.print("base_idx = "); Serial.print(base_idx); Serial.print("\n");
+        Material* material = model->GetMaterial(); 
+        int tag = 0;
         char c = bs.read();
         while(bs.available()){           
-            if(c == 'N'){
+            if(c == 'N'){ // nodes
                 float x = bs.parseFloat();
                 float y = bs.parseFloat();
-                model->AddNode(x, y, material);
+                model->AddNode(x, y, material, tag);
             }
-            else if(c == 'B'){
+            else if(c == 'B'){ // bars
                 int idx_n0 = bs.parseInt();
                 int idx_n1 = bs.parseInt();             
                 Node* n0 = model->GetNodeIdx(idx_n0 + base_idx);
                 Node* n1 = model->GetNodeIdx(idx_n1 + base_idx);
                 model->AddBar(n0, n1);
+            }
+            else if(c == 'M'){ // material
+                char name[32]; int i = 0;
+                do{
+                    name[i] = bs.read();
+                }while(c != ';' && bs.available());
+                material = model->GetMaterial(name);                
+            }
+            else if(c == 'T'){ // tag
+                tag = bs.parseInt();
             }
             c = bs.read();
         };

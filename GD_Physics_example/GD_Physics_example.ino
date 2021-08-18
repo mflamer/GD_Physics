@@ -20,12 +20,17 @@ void setup() {
   // A = 78.54 m2 
   // V = 523.6 m3  
                                // D        E           B       F       T            C 
-  rubber    = model.InitMaterial(950,       50000000, .8,  0,   14000000,   -14000000);
-  concrete  = model.InitMaterial(2300,   25000000000, 0,  0,   14000000,   -28000000);
-  steel     = model.InitMaterial(7840,  200000000000, 0,  0,   400000000,  -400000000);
-  wood      = model.InitMaterial(450,    10000000000, 0,  0,   20000000,   -20000000);
+  rubber    = model.AddMaterial("rubber",     950,      50000000,  .8,   0,    14000000,   -14000000, 0, 0);
+  concrete  = model.AddMaterial("concrete",  2300,   25000000000,   0,   0,    14000000,   -28000000, 0, 0);
+  steel     = model.AddMaterial("steel",     7840,  200000000000,   0,   0,   400000000,  -400000000, 0, 0);
+  wood      = model.AddMaterial("wood",       450,   10000000000,   0,   0,    20000000,   -20000000, 0, 0);
 
-  game_struct = model.InitMaterial(600,    100000000, 30, 0,   2000000,   -2000000);
+  _rubber    = model.AddMaterial("_rubber",    950,      5000000,  .8,  0,      7000000,    -7000000, 0, 0);
+  _concrete  = model.AddMaterial("_concrete", 2300,   2500000000,   0,  0,      7000000,   -14000000, 0, 0);
+  _steel     = model.AddMaterial("_steel",    7840,  10000000000,   0,  0,    100000000,  -100000000, 0, 0);
+  _wood      = model.AddMaterial("_wood",      450,   1000000000,   0,  0,     10000000,   -10000000, 0, 0);
+
+  //game_struct = model.InitMaterial(600,    100000000, 30, 0,   2000000,   -2000000);
 
   //rubber.mass       = 579958;       // 1100 Kg/m3 
   //rubber.spring     = 3927000000;   // EA in Pa/m (A * 0.05GPa) 
@@ -41,10 +46,10 @@ void setup() {
 
  
 
-  DrawBlock(-45, 30, 3, 3, &rubber);//->Fix_Y();
-  DrawBlock(-25, 30, 3, 3, &concrete);//->Fix_XY();
-  DrawBlock(5, 30, 3, 3, &steel);//->Fix_X();
-  DrawBlock(25, 30, 3, 3, &wood);
+  //DrawBlock(-45, 30, 3, 3, _rubber);//->Fix_Y();
+  //DrawBlock(-25, 30, 3, 3, _concrete);//->Fix_XY();
+  //DrawBlock(5, 30, 3, 3, _steel);//->Fix_X();
+  //DrawBlock(25, 30, 3, 3, _wood);
 
   //DrawNodes(16);
 
@@ -60,8 +65,8 @@ void setup() {
   // GD.cmd_loadimage(0, 0);
   // GD.load("block.jpg");
   // 
-  // #include "mesh.h"
-  // ImportMeshBuffer(test_data, &model, &game_struct);
+  #include "mesh.h"
+  ImportMeshBuffer(test_data, &model);
 // 
   // Node* bullet = model.AddNode(-200, 100, 90, 0, &steel);
   // bullet = model.AddNode(-200, 70, 90, 0, &steel);
@@ -86,18 +91,21 @@ void loop() {
 
   int t_collide;
   int t_force;
-  for(int i = 0; i < 100; i++)
+  int t_frame = micros();
+  for(int i = 0; i < 40; i++)
   {
     t_collide = micros();    
     model.Collisions(); 
     t_collide = micros() - t_collide;
     t_force = micros();
-    model.Step(1.0/6000.0);  
+    model.Step(1.0/2400.0);  
     t_force = micros() - t_force; 
   }
   
-  //Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
-  //Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
+  t_frame = micros() - t_frame;
+  Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
+  Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
+  Serial.print("frames/s = "); Serial.print(1000000/t_frame); Serial.print("\n\n");
   //model.MapNodes(&debug_point);
 
   GD.ClearColorRGB(0xe0e0e0);
@@ -112,7 +120,7 @@ void loop() {
   model.MapNodes(&dp);
 
   GD.Begin(LINES);
-  GD.LineWidth(16);
+  GD.LineWidth(32);
   model.MapBars(&draw_bar);
 
   //model.MapBars(&debug_bar);
