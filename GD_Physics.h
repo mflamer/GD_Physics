@@ -53,8 +53,9 @@ public:
 
 class ArduinoPrinter : public Printer {
 	public:
-		void operator()(char* s){Serial.print(s);}
+		void operator()(const char* s){Serial.print(s);}
 		void operator()(float f){Serial.print(f);}
+        void operator()(int i){Serial.print(i);}
 };
 
 
@@ -143,66 +144,54 @@ void DrawNodes(int n){
 
 
 
-// void ImportMeshSD(const char* file_name, Model* model, Material* material){
-// 	File dataFile = SD.open(file_name, FILE_READ);
-//     Serial.print("running the test \n");
-//     Serial.print((int)dataFile);		
-// 	if(dataFile)
-// 	{
-// 		int base_idx = model->SizeNodes();
-//         char c;
-//     	do{
-//             c = dataFile.read();
-//             Serial.print(c);
-//             if(c == 'N'){
-//                 float x = dataFile.parseFloat();
-//                 float y = dataFile.parseFloat();
-//                 Serial.print((int)model->AddNode(x, y, material));
-//             }
-//             else if(c == 'B'){
-//                 int idx_n0 = dataFile.parseInt();
-//                 int idx_n1 = dataFile.parseInt();             
-//                 Node* n0 = model->GetNodeIdx(idx_n0 + base_idx);
-//                 Node* n1 = model->GetNodeIdx(idx_n1 + base_idx);
-//                  Serial.print((int)model->AddBar(n0, n1));       
-//             }
-//         }while(c != -1);
-// 		dataFile.close();
-// 	}
-// }
 
-void ImportMeshBuffer(const unsigned char* buff, Model* model){          
-    if(buff)
-    {
-        ByteStream bs = ByteStream(buff, strlen(buff));
-        int base_idx = model->SizeNodes();
-        Material* material = model->GetMaterial(); 
+
+void ImportModel(Stream* stream, Model* model){          
+    if(stream)
+    {        
+        Mesh* mesh = NULL;
+        Material* material = NULL; 
         int tag = 0;
-        char c = bs.read();
-        while(bs.available()){           
-            if(c == 'N'){ // nodes
-                float x = bs.parseFloat();
-                float y = bs.parseFloat();
-                model->AddNode(x, y, material, tag);
+        char c = stream->read();
+        while(stream->available()){           
+            if(c == 'X'){ // mesh
+                String name;
+                c = stream->read();
+                for(int i = 0; i < 32 && stream->available(); i++){
+                    c = stream->read(); 
+                    if(c == ';'){break;}
+                    name += c;
+                }              
+                mesh = new Mesh();
+                model->AddMeshToModel(mesh, name.c_str()); 
+            }
+            else if(c == 'N'){ // nodes
+                float x = stream->parseFloat();
+                float y = stream->parseFloat();
+                mesh->AddNode(x, y, material, tag);
             }
             else if(c == 'B'){ // bars
-                int idx_n0 = bs.parseInt();
-                int idx_n1 = bs.parseInt();             
-                Node* n0 = model->GetNodeIdx(idx_n0 + base_idx);
-                Node* n1 = model->GetNodeIdx(idx_n1 + base_idx);
-                model->AddBar(n0, n1);
+                int idx_n0 = stream->parseInt();
+                int idx_n1 = stream->parseInt();             
+                Node* n0 = mesh->GetNodeIdx(idx_n0);
+                Node* n1 = mesh->GetNodeIdx(idx_n1);
+                mesh->AddBar(n0, n1);
             }
             else if(c == 'M'){ // material
-                char name[32]; int i = 0;
-                do{
-                    name[i] = bs.read();
-                }while(c != ';' && bs.available());
-                material = model->GetMaterial(name);                
+                String name;
+                c = stream->read();
+                for(int i = 0; i < 32 && stream->available(); i++){
+                    c = stream->read(); 
+                    if(c == ';'){break;}
+                    name += c;
+                }             
+                material = model->GetMaterial(name.c_str());               
             }
             else if(c == 'T'){ // tag
-                tag = bs.parseInt();
+                tag = stream->parseInt();
             }
-            c = bs.read();
+            c = stream->read();
         };
     }
 }
+

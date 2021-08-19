@@ -10,13 +10,15 @@ const float gravity = -9.81;
 
 class Printer{
 public:
-	virtual void operator()(char* s){}
+	virtual void operator()(const char* s){}
 	virtual void operator()(float f){}
+	virtual void operator()(int i){}
 };
 
 class Debug{
 public:	
-	static Printer* print;
+	static Printer* out;
+	static int		counter;
 };
 
 
@@ -86,8 +88,21 @@ public:
 	virtual void operator()(Bar* n) = 0;
 };
 
+class Mesh : public Debug{
+public:
+	Node* 		AddNode(float x, float y, Material* m, int tag = 0);
+	Node* 		AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0);
+	Bar*		AddBar(Node* n0, Node* n1);
+	void 		MapNodes(NodeFunct* f);
+	void 		MapBars(BarFunct* f);
+	Node*		GetNodeIdx(int i){return nodes.at(i);} //??
+//protected:	
+	std::vector<Node*> 					nodes;
+	std::vector<Bar*> 					bars;
+}; 
 
-class Model : public Debug{
+
+class Model : public Mesh{
 public:
 	Model(Printer* p); 
 	~Model();
@@ -95,21 +110,22 @@ public:
 	void		SetModel(float w, float h, float r, float s);
 
 
+	void		AddMeshToModel(Mesh* mesh, const char* name);
+	Mesh*		AddMeshToSim(const char* name);
+	Mesh*		RemoveMeshFromSim(const char* name);
+
 	Material*	AddMaterial(const char* N, float D, float E, float B, float F, float YT, float YC, float UT, float UC);
-	Node* 		AddNode(float x, float y, Material* m, int tag = 0);
-	Node* 		AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0);
-	Bar*		AddBar(Node* n0, Node* n1);
+	
 	void		Step(float t);
 	void		Collisions();
 	
 	int			SizeNodes(){return nodes.size();}
-	Node*		GetNodeIdx(int i){return nodes.at(i);}
+	
 	Material*	GetMaterial(const char* name = NULL);
 	
-	void 		MapNodes(NodeFunct* f);
-	void 		MapBars(BarFunct* f);
+	
 
-private:
+//private:
 
 	struct NodeLess{
     	bool operator()(Node* n0, Node* n1) 
@@ -122,8 +138,7 @@ private:
 	float								scale;
 	float 								fluid_damping = 15;
 	
-	std::vector<Node*> 					nodes;
-	std::vector<Bar*> 					bars;
+	std::map<std::string, Mesh*>		meshes;
 	std::map<std::string, Material*>	materials;
 
 };

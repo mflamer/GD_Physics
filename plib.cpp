@@ -3,7 +3,8 @@
 #include <stdio.h>
 
 
-Printer* Debug::print = 0;
+Printer* Debug::out = 0;
+int Debug::counter = 0;
 
 float V2::Distance(V2& v)
 { 
@@ -69,7 +70,7 @@ float Bar::Force(){
 	
 	
 	// coefficent of restitution
-	float cor = (dir < 0 & def > 0) | (dir > 0 & def < 0) ? (n0->mat->damping + n1->mat->damping) * 0.5 : 1; 
+	float cor = ((dir < 0) && (def > 0)) || ((dir > 0) & (def < 0)) ? (n0->mat->damping + n1->mat->damping) * 0.5 : 1; 
 	f = def * k * cor;
 	float fx = cor * f * (n1->pos.x - n0->pos.x) / l_;
 	float fy = cor * f * (n1->pos.y - n0->pos.y) / l_;
@@ -79,7 +80,7 @@ float Bar::Force(){
 }
 
 
-Node* Model::AddNode(float x, float y, Material* m, int tag = 0){
+Node* Mesh::AddNode(float x, float y, Material* m, int tag){
 	Node* n = new Node();
 	n->pos.x = x; n->pos.y = y; n->mat = m; 	 
 	//n->m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
@@ -87,14 +88,14 @@ Node* Model::AddNode(float x, float y, Material* m, int tag = 0){
 	return n;
 }
 
-Node* Model::AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0){
-	Node* n = AddNode(x, y, m);
+Node* Mesh::AddNode(float x, float y, float vx, float vy, Material* m, int tag){
+	Node* n = AddNode(x, y, m, tag);
 	n->vel.x = vx;
 	n->vel.y = vy;
 	return n;
 }
 
-Bar* Model::AddBar(Node* n0, Node* n1){
+Bar* Mesh::AddBar(Node* n0, Node* n1){
 	Bar* b = new Bar();
 	b->n0 = n0;
 	b->n1 = n1;
@@ -104,7 +105,7 @@ Bar* Model::AddBar(Node* n0, Node* n1){
 }
 
 Model::Model(Printer* p){	
-	print = p;
+	out = p;
 }
 
 void Model::SetModel(float w, float h, float r, float s){
@@ -177,9 +178,10 @@ void Model::Collisions(){
 		if((*n)->force.x != 0xFFFFFFFF)(*n)->force.x = 0;
 		if((*n)->force.y != 0xFFFFFFFF)(*n)->force.y = 0;
 	}
-	for(n = nodes.begin(); n != nodes.end(); n++){
+	for(n = nodes.begin(); n != nodes.end(); n++){		
 		for(m = n + 1; m != nodes.end(); m++){
 			if((*m)->pos.x - (*n)->pos.x > (radius * 2)) break;
+			
 			float d = (*m)->pos.Distance((*n)->pos);
 			if(d < radius * 2){
 				float k = (((*m)->mat->spring + (*n)->mat->spring) * 0.5) / radius;
@@ -191,7 +193,7 @@ void Model::Collisions(){
 				(*m)->ApplyDampedForce(collision_f);
 				(*n)->ApplyDampedForce(-collision_f);
 			}
-		}
+		}		
 
 		// test left and right model edges
 		float k = (*n)->mat->spring / radius;
@@ -224,24 +226,47 @@ Material* Model::AddMaterial(const char* N, float D, float E, float B, float F, 
 	m->yield_t = A * YT;
 	m->ult_c = A * UC;
 	m->ult_t = A * UT;
-	materials.insert({N, m});	 
+	materials.insert({N, m});
+	(*out)(N); (*out)(" = "); (*out)((int)materials[N]); (*out)("\n");
 	return m;
 }
 
-Material* Model::GetMaterial(const char* name = NULL){
-	if(name) return materials.at(name);
-	else return std::get<1>(*(materials.begin()));
+Material* Model::GetMaterial(const char* name){
+	Material* m = materials[name];
+	(*out)("Got material "); (*out)(name); (*out)(" = "); (*out)((int)m); (*out)("\n");
+	return m;
+}
+
+void Model::AddMeshToModel(Mesh* mesh, const char* name){
+	meshes[name] = mesh;
+	(*out)(name); (*out)(" = "); (*out)((int)meshes[name]); (*out)("\n");
+}
+
+Mesh* Model::AddMeshToSim(const char* name){
+	Mesh* mesh = meshes[name];
+	(*out)(name);(*out)((int)mesh);
+	if(mesh){
+		nodes.insert(nodes.end(), mesh->nodes.begin(), mesh->nodes.end());
+		bars.insert(bars.end(), mesh->bars.begin(), mesh->bars.end());
+		(*out)(name); (*out)(" added to sim, model nodes cnt = "); (*out)((int)nodes.size()); (*out)("\n");
+		return mesh;
+	}
+	return NULL;
+}
+
+Mesh* Model::RemoveMeshFromSim(const char* name){
+
 }
 
 
-void Model::MapNodes(NodeFunct* f){
+void Mesh::MapNodes(NodeFunct* f){
 	std::vector<Node*>::iterator n;
 	for(n = nodes.begin(); n != nodes.end(); n++){
 		(*f)(*n);
 	}
 }
 
-void Model::MapBars(BarFunct* f){
+void Mesh::MapBars(BarFunct* f){
 	std::vector<Bar*>::iterator b;
 	for(b = bars.begin(); b != bars.end(); b++){
 		(*f)(*b);

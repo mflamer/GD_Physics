@@ -64,9 +64,19 @@ void setup() {
 
   // GD.cmd_loadimage(0, 0);
   // GD.load("block.jpg");
-  // 
+  //
+
+  //  File dataFile = SD.open(file_name, FILE_READ);
+  //  dataFile.close(); 
   #include "mesh.h"
-  ImportMeshBuffer(test_data, &model);
+  ByteStream bs = ByteStream((byte*)mesh_data, strlen(mesh_data));
+  ImportModel(&bs, &model);
+
+  model.AddMeshToSim("mesh0");
+  model.AddMeshToSim("mesh1");
+  model.AddMeshToSim("mesh2");
+
+
 // 
   // Node* bullet = model.AddNode(-200, 100, 90, 0, &steel);
   // bullet = model.AddNode(-200, 70, 90, 0, &steel);
@@ -95,7 +105,7 @@ void loop() {
   for(int i = 0; i < 40; i++)
   {
     t_collide = micros();    
-    model.Collisions(); 
+    model.Collisions();
     t_collide = micros() - t_collide;
     t_force = micros();
     model.Step(1.0/2400.0);  
@@ -103,10 +113,10 @@ void loop() {
   }
   
   t_frame = micros() - t_frame;
-  Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
-  Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
-  Serial.print("frames/s = "); Serial.print(1000000/t_frame); Serial.print("\n\n");
-  //model.MapNodes(&debug_point);
+ //Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
+ //Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
+ //Serial.print("frames/s = "); Serial.print(1000000/t_frame); Serial.print("\n\n");
+  
 
   GD.ClearColorRGB(0xe0e0e0);
   GD.Clear();
