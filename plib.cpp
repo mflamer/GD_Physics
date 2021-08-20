@@ -56,24 +56,34 @@ V2	Bar::Dir(){
 // +F = tension, -F = compression
 float Bar::Force(){
 	// bar force
-	float k = ((n0->mat->spring + n1->mat->spring) * 0.5) / l;
+	float k = ((n0->mat->spring + n1->mat->spring) * 0.5) / l; 
 	float l_ = n0->pos.Distance(n1->pos); // current length
 	float def = l_ - l; // current deflection
-	
+	f = def * k;
+	if(f > Yield_T()){
+		float plastic_def = def * ((Yield_T() / f));
+		l += plastic_def;
+		f = Yield_T() + ((f - Yield_T()) * 0.05); // global 5% strain hardening
+	}
+	else if(f < Yield_C()){
+		float plastic_def = def * ((Yield_C() / f));
+		l += plastic_def;
+		f = Yield_C() + ((f - Yield_C()) * 0.05); // global 5% strain hardening
+	}
+
 	// bar relative velocity for damping
 	V2 rel_v;	
 	rel_v.x = n1->vel.x - n0->vel.x;
 	rel_v.y = n1->vel.y - n0->vel.y;
 
-	// does the relative velocity match the direction of force?	
-	float dir = rel_v.Dot(Dir());
-	
+	// does the relative velocity match the direction of force?	 
+	float dir = rel_v.Dot(Dir());	
 	
 	// coefficent of restitution
 	float cor = ((dir < 0) && (def > 0)) || ((dir > 0) & (def < 0)) ? (n0->mat->damping + n1->mat->damping) * 0.5 : 1; 
-	f = def * k * cor;
-	float fx = cor * f * (n1->pos.x - n0->pos.x) / l_;
-	float fy = cor * f * (n1->pos.y - n0->pos.y) / l_;
+	f *= cor;
+	float fx = f * Dir().x;
+	float fy = f * Dir().y;
 	n0->ApplyForce(fx, fy);
 	n1->ApplyForce(-fx, -fy);
 	return f;
@@ -136,7 +146,7 @@ void Model::Step(float t){
 	for(b_itr = bars.begin(); b_itr != bars.end(); b_itr++){
 		float bf = (*b_itr)->Force();
 		//test for bar yield and remove if so
-		if((bf > (*b_itr)->Yield_T()) | (bf < (*b_itr)->Yield_C())) {
+		if((bf > (*b_itr)->Ult_T()) | (bf < (*b_itr)->Ult_C())) {
 			delete *b_itr;
 			b_itr = bars.erase(b_itr);
 			if(b_itr == bars.end()) break;

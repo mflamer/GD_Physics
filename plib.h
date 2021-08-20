@@ -73,7 +73,9 @@ class Bar : public Debug{
 public:
 	float		Force();	// calculate and apply bar force
 	float		Yield_T(){return (n0->mat->yield_t + n1->mat->yield_t) / 2;}
-	float		Yield_C(){return (n0->mat->yield_c + n1->mat->yield_c) / 2;}	
+	float		Yield_C(){return (n0->mat->yield_c + n1->mat->yield_c) / 2;}
+	float		Ult_T(){return (n0->mat->ult_t + n1->mat->ult_t) / 2;}
+	float		Ult_C(){return (n0->mat->ult_c + n1->mat->ult_c) / 2;}	
 	V2			Dir();	
 	
 	Node* 		n0;

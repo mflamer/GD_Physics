@@ -22,10 +22,10 @@ public:
 		int x1 = int(((b->n1->pos.x * 64) + 0.5) + (GD.w / 2)*16); 
 		int y1 = int(((-1 * b->n1->pos.y * 64) + 0.5) + (GD.h / 2)*16);//!!!!fix scale
 
-		float lim_t = (b->n0->mat->yield_t + b->n1->mat->yield_t) / 2;
-        float lim_c = (b->n0->mat->yield_c + b->n1->mat->yield_c) / 2;
-        int red = b->f > 0 ? int(255 * (b->f / (.3 * lim_t))) : 0;
-		int blu = b->f < 0 ? int(255 * (b->f / (.3 * lim_c))) : 0;
+		// float lim_t = (b->n0->mat->yield_t + b->n1->mat->yield_t) / 2;
+  //       float lim_c = (b->n0->mat->yield_c + b->n1->mat->yield_c) / 2;
+        int red = b->f > 0 ? int(255 * (b->f / (b->Ult_T()))) : 0;
+		int blu = b->f < 0 ? int(255 * (b->f / (b->Ult_C()))) : 0;
 
 		//Serial.print(red); Serial.print("\n");
 

@@ -19,16 +19,16 @@ void setup() {
   // r = 5 m
   // A = 78.54 m2 
   // V = 523.6 m3  
-                               // D        E           B       F       T            C 
-  rubber    = model.AddMaterial("rubber",     950,      50000000,  .8,   0,    14000000,   -14000000, 0, 0);
-  concrete  = model.AddMaterial("concrete",  2300,   25000000000,   0,   0,    14000000,   -28000000, 0, 0);
-  steel     = model.AddMaterial("steel",     7840,  200000000000,   0,   0,   400000000,  -400000000, 0, 0);
-  wood      = model.AddMaterial("wood",       450,   10000000000,   0,   0,    20000000,   -20000000, 0, 0);
+                               // D            E           B        F    T         YC          YT           UC           UT 
+  rubber    = model.AddMaterial("rubber",     950,      50000000,  .8,   0,    12000000,   -12000000,    16000000,   -16000000);
+  concrete  = model.AddMaterial("concrete",  2300,   25000000000,   0,   0,    16000000,   -10000000,    16000000,   -14000000);
+  steel     = model.AddMaterial("steel",     7840,  200000000000,   0,   0,   250000000,  -250000000,   400000000,  -400000000);
+  wood      = model.AddMaterial("wood",       450,   10000000000,   0,   0,    10000000,   -10000000,    11000000,   -11000000);
 
-  _rubber    = model.AddMaterial("_rubber",    950,      5000000,  .8,  0,      7000000,    -7000000, 0, 0);
-  _concrete  = model.AddMaterial("_concrete", 2300,   2500000000,   0,  0,      7000000,   -14000000, 0, 0);
-  _steel     = model.AddMaterial("_steel",    7840,  10000000000,   0,  0,    100000000,  -100000000, 0, 0);
-  _wood      = model.AddMaterial("_wood",      450,   1000000000,   0,  0,     10000000,   -10000000, 0, 0);
+  _rubber    = model.AddMaterial("_rubber",    950,      5000000,  .8,   0,     1200000,    -1200000,     1600000,    -1600000);
+  _concrete  = model.AddMaterial("_concrete", 2300,   2500000000,   0,   0,     1600000,    -1000000,     1600000,    -1400000);
+  _steel     = model.AddMaterial("_steel",    7840,  10000000000,   0,   0,    25000000,   -25000000,    40000000,   -40000000);
+  _wood      = model.AddMaterial("_wood",      450,   1000000000,   0,   0,     1000000,    -1000000,     1100000,    -1100000);
 
   //game_struct = model.InitMaterial(600,    100000000, 30, 0,   2000000,   -2000000);
 
