@@ -15,7 +15,7 @@ void setup() {
   GD.begin();
 
    //setup model
-  model.SetModel(GD.w/4, GD.h/4, 1, 30);
+  model.SetModel(GD.w/4, GD.h/4, 1);
 
   //setup materials
   // r = 5 m
@@ -65,8 +65,8 @@ void setup() {
   model.AddFunctToTagMap(0, &draw_bar);
   
 
-  //GD.cmd_loadimage(0, 0);
-  //GD.load("block.jpg");
+  GD.cmd_loadimage(0, 0);
+  GD.load("block.jpg");
   //
 
   //  File dataFile = SD.open(file_name, FILE_READ);
@@ -91,44 +91,51 @@ void setup() {
   //Node* n3 = model.AddNode(9,  25, &wood);
   // t_start = millis();
 
-
 }
 
 
 int pause;
-
 void loop() {
   GD.get_inputs();  
   if (GD.inputs.x != -32768 && pause == 0) {
     float x = ScreenToModel_X(GD.inputs.x);
     float y = ScreenToModel_Y(GD.inputs.y); 
+    Serial.print("x = "); Serial.print(x); Serial.print("\n");
+    Serial.print("y = "); Serial.print(y); Serial.print("\n");
     Node* bullet = model.AddNode(x, y, 80, 0, _steel, 0);
     pause = 30;
   }
   if(pause > 0)pause--;
   else pause = 0;
 
-  
-  //model.Frame();
-
-
+  int t_collide;
+  int t_force;
+  int t_frame = micros();
   for(int i = 0; i < 30; i++)
-    {
-         
-      model.Collisions();     
-     
-      model.Step(1.0); 
-     
-    }
-
+  {
+    t_collide = micros();    
+    model.Collisions();
+    t_collide = micros() - t_collide;
+    t_force = micros();
+    model.Step(1.0/1800.0);  
+    t_force = micros() - t_force; 
+  }
+  
+  t_frame = micros() - t_frame;
+  //Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
+  //Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
+  //Serial.print("frames/s = "); Serial.print(1000000/t_frame); Serial.print("\n\n");
+  
 
   GD.ClearColorRGB(0xe0e0e0);
   GD.Clear();
   GD.ColorRGB(30, 30, 30);
-  //GD.cmd_number(40, 20, 23, OPT_CENTER, );  
+  GD.cmd_number(40, 20, 23, OPT_CENTER, 1000000/t_frame);
+
+  
   
 
-  //GD.ColorRGB(240,240,240);
+  GD.ColorRGB(240,240,240);
   //GD.Begin(POINTS);
   //GD.PointSize(int((1 * 64) + 0.5));
   //GD.Begin(BITMAPS);
