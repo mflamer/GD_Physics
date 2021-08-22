@@ -5,21 +5,23 @@
 	
 const float gravity = -9.81;
 
-class Printer{
+class Debugger{
 public:
-	virtual void operator()(const char* s){}
-	virtual void operator()(float f){}
-	virtual void operator()(int i){}
+	virtual void print(const char* s) = 0;
+	virtual void print(float f) = 0;
+	virtual void print(int i) = 0;
+	virtual int  ticks() = 0;
 };
 
-class Debug{
-public:	
-	static Printer* out;
+class Debuggable{
+public:
+	~Debuggable();
+	static Debugger* dbg;
 	static int		counter;
 };
 
 
-struct V2 : public Debug{
+struct V2 : public Debuggable{
 			V2(){;}
 			V2(float _x, float _y){x = _x; y = _y;}
 	float 	Distance(V2& v);
@@ -45,7 +47,7 @@ struct Material{
 };
 
 
-class Node : public Debug{
+class Node : public Debuggable{
 public:	
 	void		ApplyForce(float fx, float fy);
 	void		ApplyDampedForce(const V2& f);
@@ -60,7 +62,7 @@ public:
 	int			tag;
 };
 
-class Bar : public Debug{
+class Bar : public Debuggable{
 public:
 	float		Force();	// calculate and apply bar force
 	float		Yield_T(){return (n0->mat->yield_t + n1->mat->yield_t) / 2;}
@@ -88,7 +90,7 @@ public:
 	virtual void Init(){;}
 };
 
-class Mesh : public Debug{
+class Mesh : public Debuggable{
 public:
 	Node* 		AddNode(float x, float y, Material* m, int tag = 0);
 	Node* 		AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0);
@@ -104,10 +106,10 @@ public:
 
 class Model : public Mesh{
 public:
-	Model(Printer* p); 
+	Model(Debugger* d){dbg = d;} 
 	~Model();
 
-	void		SetModel(float w, float h, float r);
+	void		SetModel(float w, float h, float r, int d);
 
 	void		AddMeshToModel(Mesh* mesh, const char* name);
 	Mesh*		AddMeshToSim(const char* name);
@@ -122,6 +124,7 @@ public:
 
 	void		Step(float t);
 	void		Collisions();
+	int			Frame();
 	
 	int			SizeNodes(){return nodes.size();}//???
 	
@@ -149,6 +152,7 @@ private:
 	float 								height;
 	float 								radius;
 	float 								fluid_damping = 15;
+	int									delta_iters;
 	
 	std::map<std::string, Mesh*>		meshes;
 	std::map<std::string, Material*>	materials;

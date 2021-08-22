@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 
-Printer* Debug::out = 0;
-int Debug::counter = 0;
+Debugger* Debuggable::dbg = 0;
+int Debuggable::counter = 0;
 
 float V2::Distance(V2& v)
 { 
@@ -115,15 +115,12 @@ Bar* Mesh::AddBar(Node* n0, Node* n1, int tag){
 	return b;
 }
 
-Model::Model(Printer* p){	
-	out = p;
-}
 
-void Model::SetModel(float w, float h, float r){
+void Model::SetModel(float w, float h, float r, int d){
 	width = w;
 	height = h;
 	radius = r;
-	
+	delta_iters = d;
 }
 
 Model::~Model(){
@@ -139,9 +136,15 @@ Model::~Model(){
 	for(mitr = materials.begin(); mitr != materials.end(); mitr++){
 		delete std::get<1>(*mitr);
 	}
+
 }	
 
+Debuggable::~Debuggable(){
+	delete dbg;
+}
+
 void Model::Step(float t){
+	dbg->print("-step"); dbg->print(t); 
 	// apply forces from bars
 	std::vector<Bar*>::iterator b_itr;
 	for(b_itr = bars.begin(); b_itr != bars.end(); b_itr++){
@@ -238,28 +241,28 @@ Material* Model::AddMaterial(const char* N, float D, float E, float B, float F, 
 	m->ult_c = A * UC;
 	m->ult_t = A * UT;
 	materials.insert({N, m});
-	(*out)(N); (*out)(" = "); (*out)((int)materials[N]); (*out)("\n");
+	dbg->print(N); dbg->print(" = "); dbg->print((int)materials[N]); dbg->print("\n");
 	return m;
 }
 
 Material* Model::GetMaterial(const char* name){
 	Material* m = materials[name];
-	(*out)("Got material "); (*out)(name); (*out)(" = "); (*out)((int)m); (*out)("\n");
+	dbg->print("Got material "); dbg->print(name); dbg->print(" = "); dbg->print((int)m); dbg->print("\n");
 	return m;
 }
 
 void Model::AddMeshToModel(Mesh* mesh, const char* name){
 	meshes[name] = mesh;
-	(*out)(name); (*out)(" = "); (*out)((int)meshes[name]); (*out)("\n");
+	dbg->print(name); dbg->print(" = "); dbg->print((int)meshes[name]); dbg->print("\n");
 }
 
 Mesh* Model::AddMeshToSim(const char* name){
 	Mesh* mesh = meshes[name];
-	(*out)(name);(*out)((int)mesh);
+	dbg->print(name);dbg->print((int)mesh);
 	if(mesh){
 		nodes.insert(nodes.end(), mesh->nodes.begin(), mesh->nodes.end());
 		bars.insert(bars.end(), mesh->bars.begin(), mesh->bars.end());
-		(*out)(name); (*out)(" added to sim, model nodes cnt = "); (*out)((int)nodes.size()); (*out)("\n");
+		dbg->print(name); dbg->print(" added to sim, model nodes cnt = "); dbg->print((int)nodes.size()); dbg->print("\n");
 		return mesh;
 	}
 	return NULL;
@@ -301,7 +304,7 @@ void Model::BatchNodesByTag(){
 		if((*n)->tag != current_tag){
 			current_tag = (*n)->tag;
 			f = nodeTagMap[current_tag];
-			if(f==NULL)(*out)("Node funct = 0 in tag map. crash! \n");
+			if(f==NULL)dbg->print("Node funct = 0 in tag map. crash! \n");
 			f->Init();
 		}
 		(*f)(*n);
@@ -317,10 +320,31 @@ void Model::BatchBarsByTag(){
 		if((*b)->tag != current_tag){
 			current_tag = (*b)->tag;
 			f = barTagMap[current_tag];
-			if(f==NULL)(*out)("Bar funct = 0 in tag map. crash! \n");
+			if(f==NULL)dbg->print("Bar funct = 0 in tag map. crash! \n");
 			f->Init();
 		}			
 		(*f)(*b);
 	}
+}
+
+int Model::Frame(){
+	int t_collide;
+  	int t_force;  	
+  	int fps = dbg->ticks();
+  	for(int i = 0; i < delta_iters; i++)
+  	{
+  	  t_collide = dbg->ticks();    
+  	  Collisions();  	  
+  	  t_collide = dbg->ticks() - t_collide;
+  	  t_force = dbg->ticks();  	  
+  	  Step(0.01); 
+  	  t_force = dbg->ticks() - t_force; 
+  	}
+  	
+  	fps = 1000000 / (dbg->ticks() - fps);
+  	dbg->print("t_collide = "); dbg->print(t_collide); dbg->print("\n");
+  	dbg->print("t_force = "); dbg->print(t_force); dbg->print("\n");
+  	dbg->print("frames/s = "); dbg->print(fps); dbg->print("\n\n");
+  	return fps;
 }
 

@@ -12,9 +12,9 @@ float   ScreenToModel_X(int x){return (x - (GD.w/2)) / (scale/16);}
 float   ScreenToModel_Y(int y){return (-y + (GD.h/2)) / (scale/16);}
 
 
-class DrawNode_Circle : public NodeFunct {
+class Draw_Node_Basic : public NodeFunct {
 public:
-    DrawNode_Circle(int r){radius = r;}// r in subpix
+    Draw_Node_Basic(int r){radius = r;}// r in subpix
     void Init(){
         GD.Begin(POINTS);
         GD.PointSize(radius);
@@ -22,6 +22,21 @@ public:
     }
 	void operator()(Node* n){
 		GD.Vertex2f(ModelToScreen_X(n->pos.x), ModelToScreen_Y(n->pos.y));
+    }
+
+    int radius;
+};
+
+class Draw_Bullet : public NodeFunct {
+public:
+    Draw_Bullet(int r){radius = r;}// r in subpix
+    void Init(){
+        GD.Begin(POINTS);
+        GD.PointSize(radius);
+        GD.ColorRGB(30,30,30);
+    }
+    void operator()(Node* n){
+        GD.Vertex2f(ModelToScreen_X(n->pos.x), ModelToScreen_Y(n->pos.y));
     }
 
     int radius;
@@ -62,11 +77,12 @@ public:
 		}
 	};
 
-class ArduinoPrinter : public Printer {
+class ArduinoPrinter : public Debugger {
 	public:
-		void operator()(const char* s){Serial.print(s);}
-		void operator()(float f){Serial.print(f);}
-        void operator()(int i){Serial.print(i);}
+		void  print(const char* s){Serial.print(s);}
+		void  print(float f){Serial.print(f);}
+        void  print(int i){Serial.print(i);}
+        int   ticks(){return micros();}      
 };
 
 
@@ -74,26 +90,15 @@ class ArduinoPrinter : public Printer {
 
 
 
-DrawNode_Circle draw_node(32);
+Draw_Node_Basic draw_node(64);
 DrawBar_Stress draw_bar(32);
 DebugPoint debug_point;
 DebugBar debug_bar;
 
 
-Printer* p = new ArduinoPrinter;
-Model model(p);
-
+ArduinoPrinter* ap = new ArduinoPrinter;
+Model model(ap);
  
-
-// Material*   rubber;
-// Material*   concrete;
-// Material*   steel;
-// Material*   wood;
-// Material*   _rubber;
-// Material*   _concrete;
-// Material*   _steel;
-// Material*   _wood;
-// Material*   game_struct;
 
 
 
@@ -135,23 +140,12 @@ Node* DrawBlock(float x, float y, float w, float h, Material* m){
 	return n0;
 }
 
-// Node* DrawBlock(float x, float y, int nx, int ny, float spac, Material* mat){
-
-//   for(int i = 0; i < ny; i++){
-//     for(int j = 0; j < xy; j++){
-//       Node* n = model.AddNode(x + (j * spac), y + (i * spac), mat);
-//   }
-
-//   return n0;
-// }
 
 // void DrawNodes(int n){
 // 	for(int i = 0; i < n; i++){
 // 		model.AddNode(-200 + i * 15, i * 5, concrete);
 // 	}
 // }
-
-
 
 
 
