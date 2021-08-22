@@ -4,9 +4,6 @@
 #include <map>
 	
 const float gravity = -9.81;
-//float scale = 64;//  pix / m 
-
-
 
 class Printer{
 public:
@@ -63,12 +60,6 @@ public:
 	int			tag;
 };
 
-class NodeFunct{
-public:
-	virtual void operator()(Node* n) = 0;
-};
-
-
 class Bar : public Debug{
 public:
 	float		Force();	// calculate and apply bar force
@@ -85,18 +76,25 @@ public:
 	int			tag;
 };
 
+class NodeFunct{
+public:
+	virtual void operator()(Node* n);
+	virtual void Init(){;}
+};
+
 class BarFunct{
 public:
-	virtual void operator()(Bar* n) = 0;
+	virtual void operator()(Bar* n);
+	virtual void Init(){;}
 };
 
 class Mesh : public Debug{
 public:
 	Node* 		AddNode(float x, float y, Material* m, int tag = 0);
 	Node* 		AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0);
-	Bar*		AddBar(Node* n0, Node* n1);
-	void 		MapNodes(NodeFunct* f);
-	void 		MapBars(BarFunct* f);
+	Bar*		AddBar(Node* n0, Node* n1, int tag = 0);
+	void 		Apply(NodeFunct& f);
+	void 		Apply(BarFunct& f);
 	Node*		GetNodeIdx(int i){return nodes.at(i);} //??
 //protected:	
 	std::vector<Node*> 					nodes;
@@ -109,8 +107,7 @@ public:
 	Model(Printer* p); 
 	~Model();
 
-	void		SetModel(float w, float h, float r, float s);
-
+	void		SetModel(float w, float h, float r);
 
 	void		AddMeshToModel(Mesh* mesh, const char* name);
 	Mesh*		AddMeshToSim(const char* name);
@@ -118,30 +115,45 @@ public:
 
 	Material*	AddMaterial(const char* N, float D, float E, float B, float F, float YT, float YC, float UT, float UC);
 	
+	void 		AddFunctToTagMap(int t, NodeFunct* f);
+	void		AddFunctToTagMap(int t, BarFunct* f);
+	void		BatchNodesByTag();
+	void		BatchBarsByTag();
+
 	void		Step(float t);
 	void		Collisions();
 	
-	int			SizeNodes(){return nodes.size();}
+	int			SizeNodes(){return nodes.size();}//???
 	
-	Material*	GetMaterial(const char* name = NULL);
-	
+	Material*	GetMaterial(const char* name = NULL);	
 	
 
-//private:
+private:
 
-	struct NodeLess{
+	struct SortNodes_X{
     	bool operator()(Node* n0, Node* n1) 
     		const { return n0->pos.x < n1->pos.x; }
+	};
+
+	struct SortNodes_Tag{
+    	bool operator()(Node* n0, Node* n1) 
+    		const { return n0->tag < n1->tag; }
+	};
+
+	struct SortBars_Tag{
+    	bool operator()(Bar* b0, Bar* b1) 
+    		const { return b0->tag < b1->tag; }
 	};
 
 	float 								width;
 	float 								height;
 	float 								radius;
-	float								scale;
 	float 								fluid_damping = 15;
 	
 	std::map<std::string, Mesh*>		meshes;
 	std::map<std::string, Material*>	materials;
+	std::map<int, NodeFunct*>			nodeTagMap;
+	std::map<int, BarFunct*>			barTagMap;
 
 };
 

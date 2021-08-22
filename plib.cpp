@@ -105,10 +105,11 @@ Node* Mesh::AddNode(float x, float y, float vx, float vy, Material* m, int tag){
 	return n;
 }
 
-Bar* Mesh::AddBar(Node* n0, Node* n1){
+Bar* Mesh::AddBar(Node* n0, Node* n1, int tag){
 	Bar* b = new Bar();
 	b->n0 = n0;
 	b->n1 = n1;
+	b->tag = tag;
 	b->l = n0->pos.Distance(n1->pos);
 	bars.push_back(b);
 	return b;
@@ -118,11 +119,11 @@ Model::Model(Printer* p){
 	out = p;
 }
 
-void Model::SetModel(float w, float h, float r, float s){
-	width = w / (s/16);
-	height = h / (s/16);
+void Model::SetModel(float w, float h, float r){
+	width = w;
+	height = h;
 	radius = r;
-	scale = r;
+	
 }
 
 Model::~Model(){
@@ -180,7 +181,7 @@ void Model::Step(float t){
 }
 
 void Model::Collisions(){
-	sort(nodes.begin(), nodes.end(), NodeLess());
+	sort(nodes.begin(), nodes.end(), SortNodes_X());
 	std::vector<Node*>::iterator n;
 	std::vector<Node*>::iterator m;
 	//clear forces
@@ -269,18 +270,57 @@ Mesh* Model::RemoveMeshFromSim(const char* name){
 }
 
 
-void Mesh::MapNodes(NodeFunct* f){
+void Mesh::Apply(NodeFunct& f){
 	std::vector<Node*>::iterator n;
 	for(n = nodes.begin(); n != nodes.end(); n++){
+		f(*n);
+	}
+}
+
+void Mesh::Apply(BarFunct& f){
+	std::vector<Bar*>::iterator b;
+	for(b = bars.begin(); b != bars.end(); b++){
+		f(*b);
+	}
+}
+
+void Model::AddFunctToTagMap(int t, NodeFunct* f){
+	nodeTagMap[t] = f; 
+}
+
+void Model::AddFunctToTagMap(int t, BarFunct* f){
+	barTagMap[t] = f; 
+}
+
+void Model::BatchNodesByTag(){
+	sort(nodes.begin(), nodes.end(), SortNodes_Tag());
+	std::vector<Node*>::iterator n;
+	int current_tag = 0xFFFFFFFF;
+	NodeFunct* f = NULL;
+	for(n = nodes.begin(); n != nodes.end(); n++){
+		if((*n)->tag != current_tag){
+			current_tag = (*n)->tag;
+			f = nodeTagMap[current_tag];
+			if(f==NULL)(*out)("Node funct = 0 in tag map. crash! \n");
+			f->Init();
+		}
 		(*f)(*n);
 	}
 }
 
-void Mesh::MapBars(BarFunct* f){
+void Model::BatchBarsByTag(){
+	sort(bars.begin(), bars.end(), SortBars_Tag());
 	std::vector<Bar*>::iterator b;
+	int current_tag = 0xFFFFFFFF;
+	BarFunct* f = NULL;	
 	for(b = bars.begin(); b != bars.end(); b++){
+		if((*b)->tag != current_tag){
+			current_tag = (*b)->tag;
+			f = barTagMap[current_tag];
+			if(f==NULL)(*out)("Bar funct = 0 in tag map. crash! \n");
+			f->Init();
+		}			
 		(*f)(*b);
 	}
 }
-
 

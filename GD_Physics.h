@@ -3,36 +3,47 @@
 #include <plib.h>
 #include <ByteStream.h>
 
- 
-class DrawPoint : public NodeFunct {
-public:
-	void operator()(Node* n){
-		int xf = int(((n->pos.x * 64) + 0.5) + (GD.w / 2)*16); //!!!!fix scale
-		int yf = int(((-1 * n->pos.y * 64) + 0.5) + (GD.h / 2)*16); //!!!!fix scale
+static const float scale = 64; //subpix/m 
 
-		GD.Vertex2f(xf, yf);
-	}
+
+int     ModelToScreen_X(float x){return (int)(((x * scale) + 0.5) + (GD.w * 8));}
+int     ModelToScreen_Y(float y){return (int)(((-y * scale) + 0.5) + (GD.h * 8));}
+float   ScreenToModel_X(int x){return (x - (GD.w/2)) / (scale/16);}
+float   ScreenToModel_Y(int y){return (-y + (GD.h/2)) / (scale/16);}
+
+
+class DrawNode_Circle : public NodeFunct {
+public:
+    DrawNode_Circle(int r){radius = r;}// r in subpix
+    void Init(){
+        GD.Begin(POINTS);
+        GD.PointSize(radius);
+        GD.ColorRGB(30,30,30);
+    }
+	void operator()(Node* n){
+		GD.Vertex2f(ModelToScreen_X(n->pos.x), ModelToScreen_Y(n->pos.y));
+    }
+
+    int radius;
 };
 
-class DrawBar : public BarFunct {
+class DrawBar_Stress : public BarFunct {
 public:
+    DrawBar_Stress(int w){width = w;}// w in subpix
+    void Init(){
+        GD.Begin(LINES);
+        GD.LineWidth(width);
+    }
 	void operator()(Bar* b){
-		int x0 = int(((b->n0->pos.x * 64) + 0.5) + (GD.w / 2)*16); //!!!!fix scale
-		int y0 = int(((-1 * b->n0->pos.y * 64) + 0.5) + (GD.h / 2)*16); 
-		int x1 = int(((b->n1->pos.x * 64) + 0.5) + (GD.w / 2)*16); 
-		int y1 = int(((-1 * b->n1->pos.y * 64) + 0.5) + (GD.h / 2)*16);//!!!!fix scale
-
-		// float lim_t = (b->n0->mat->yield_t + b->n1->mat->yield_t) / 2;
-  //       float lim_c = (b->n0->mat->yield_c + b->n1->mat->yield_c) / 2;
         int red = b->f > 0 ? int(255 * (b->f / (b->Ult_T()))) : 0;
-		int blu = b->f < 0 ? int(255 * (b->f / (b->Ult_C()))) : 0;
-
-		//Serial.print(red); Serial.print("\n");
+		int blu = b->f < 0 ? int(255 * (b->f / (b->Ult_C()))) : 0;		
 
 		GD.ColorRGB(red+20, 20, blu+20);
-		GD.Vertex2f(x0, y0);
-		GD.Vertex2f(x1, y1);
+		GD.Vertex2f(ModelToScreen_X(b->n0->pos.x), ModelToScreen_Y(b->n0->pos.y));
+		GD.Vertex2f(ModelToScreen_X(b->n1->pos.x), ModelToScreen_Y(b->n1->pos.y));
 	}
+
+    int width;
 };
 
 class DebugPoint : public NodeFunct {
@@ -63,8 +74,8 @@ class ArduinoPrinter : public Printer {
 
 
 
-DrawPoint dp;
-DrawBar draw_bar;
+DrawNode_Circle draw_node(32);
+DrawBar_Stress draw_bar(32);
 DebugPoint debug_point;
 DebugBar debug_bar;
 
@@ -74,15 +85,15 @@ Model model(p);
 
  
 
-Material*   rubber;
-Material*   concrete;
-Material*   steel;
-Material*   wood;
-Material*   _rubber;
-Material*   _concrete;
-Material*   _steel;
-Material*   _wood;
-Material*   game_struct;
+// Material*   rubber;
+// Material*   concrete;
+// Material*   steel;
+// Material*   wood;
+// Material*   _rubber;
+// Material*   _concrete;
+// Material*   _steel;
+// Material*   _wood;
+// Material*   game_struct;
 
 
 
@@ -134,11 +145,11 @@ Node* DrawBlock(float x, float y, float w, float h, Material* m){
 //   return n0;
 // }
 
-void DrawNodes(int n){
-	for(int i = 0; i < n; i++){
-		model.AddNode(-200 + i * 15, i * 5, concrete);
-	}
-}
+// void DrawNodes(int n){
+// 	for(int i = 0; i < n; i++){
+// 		model.AddNode(-200 + i * 15, i * 5, concrete);
+// 	}
+// }
 
 
 
@@ -161,7 +172,7 @@ void ImportModel(Stream* stream, Model* model){
                     c = stream->read(); 
                     if(c == ';'){break;}
                     name += c;
-                }              
+                }           
                 mesh = new Mesh();
                 model->AddMeshToModel(mesh, name.c_str()); 
             }
@@ -175,7 +186,7 @@ void ImportModel(Stream* stream, Model* model){
                 int idx_n1 = stream->parseInt();             
                 Node* n0 = mesh->GetNodeIdx(idx_n0);
                 Node* n1 = mesh->GetNodeIdx(idx_n1);
-                mesh->AddBar(n0, n1);
+                mesh->AddBar(n0, n1, tag);
             }
             else if(c == 'M'){ // material
                 String name;
