@@ -8,8 +8,6 @@ int t_start;
 Material* _steel;
 
 void setup() {
-  // Serial.begin(115200);
-  // while (!Serial) { ;} // debug
 
 
   GD.begin();
@@ -21,18 +19,16 @@ void setup() {
   // r = 5 m
   // A = 78.54 m2 
   // V = 523.6 m3  
-                               // D            E           B        F    T         YT          YC           UT           UC 
+                               // D            E        B    F         YT          YC           UT           UC 
   model.AddMaterial("rubber",     950,      50000000,  .8,   0,    12000000,   -12000000,    16000000,   -16000000);
   model.AddMaterial("concrete",  2300,   25000000000,   0,   0,    16000000,   -10000000,    16000000,   -14000000);
   model.AddMaterial("steel",     7840,  200000000000,   0,   0,   250000000,  -250000000,   400000000,  -400000000);
   model.AddMaterial("wood",       450,   10000000000,   0,   0,    10000000,   -10000000,    11000000,   -11000000);
 
-  model.AddMaterial("_rubber",    950,      5000000,  .8,   0,     1200000,    -1200000,     1600000,    -1600000);
-  model.AddMaterial("_concrete", 2300,   2500000000,   0,   0,     3000000,    -4000000,     3800000,    -4000000);
-  _steel = model.AddMaterial("_steel",    7840,  10000000000,   0,   0,    25000000,   -25000000,    40000000,   -40000000);
-  model.AddMaterial("_wood",      450,   1000000000,   0,   0,     1000000,    -1000000,     1100000,    -1100000);
-
-  //game_struct = model.InitMaterial(600,    100000000, 30, 0,   2000000,   -2000000);
+  model.AddMaterial("_rubber",    950,       5000000,  .8,   0,     1200000,    -1200000,     1600000,    -1600000);
+  model.AddMaterial("_concrete", 2300,    2500000000,   0,   0,     3000000,    -5000000,     3800000,    -5000000);
+  model.AddMaterial("_steel",    7840,   10000000000,   0,   0,    25000000,   -25000000,    40000000,   -40000000);
+  model.AddMaterial("_wood",      450,    1000000000,   0,   0,     1000000,    -1000000,     1100000,    -1100000);
 
   //rubber.mass       = 579958;       // 1100 Kg/m3 
   //rubber.spring     = 3927000000;   // EA in Pa/m (A * 0.05GPa) 
@@ -80,16 +76,8 @@ void setup() {
   //model.AddMeshToSim("mesh2");
 
   model.AddMeshToSim("building");
-  // Node* bullet = model.AddNode(-200, 100, 90, 0, _steel, 0);
-  // bullet = model.AddNode(-200, 70, 90, 0, _steel, 0);
-  // bullet = model.AddNode(-200, 40, 90, 0, _steel, 0);
-  // bullet = model.AddNode(-200, 20, 90, 0, _steel, 0);
+
   
-  //Node* n0 = model.AddNode(-9, 25, &rubber);
-  //Node* n1 = model.AddNode(-3, 25, &concrete);
-  //Node* n2 = model.AddNode(3,  25, &steel);
-  //Node* n3 = model.AddNode(9,  25, &wood);
-  // t_start = millis();
 
 }
 
@@ -100,37 +88,21 @@ void loop() {
   if (GD.inputs.x != -32768 && pause == 0) {
     float x = ScreenToModel_X(GD.inputs.x);
     float y = ScreenToModel_Y(GD.inputs.y); 
-    Serial.print("x = "); Serial.print(x); Serial.print("\n");
-    Serial.print("y = "); Serial.print(y); Serial.print("\n");
-    Node* bullet = model.AddNode(x, y, 80, 0, _steel, 0);
+    Node* bullet = model.AddNode(x, y, 80, 0, model.GetMaterial("_steel"), 0);
     pause = 30;
   }
   if(pause > 0)pause--;
   else pause = 0;
 
-  int t_collide;
-  int t_force;
-  int t_frame = micros();
-  for(int i = 0; i < 30; i++)
-  {
-    t_collide = micros();    
-    model.Collisions();
-    t_collide = micros() - t_collide;
-    t_force = micros();
-    model.Step(1.0/1800.0);  
-    t_force = micros() - t_force; 
-  }
-  
-  t_frame = micros() - t_frame;
-  //Serial.print("t_collide = "); Serial.print(t_collide); Serial.print("\n");
-  //Serial.print("t_force = "); Serial.print(t_force); Serial.print("\n");
-  //Serial.print("frames/s = "); Serial.print(1000000/t_frame); Serial.print("\n\n");
+
+
+ int fps =  model.Frame(30);
   
 
   GD.ClearColorRGB(0xe0e0e0);
   GD.Clear();
   GD.ColorRGB(30, 30, 30);
-  GD.cmd_number(40, 20, 23, OPT_CENTER, 1000000/t_frame);
+  GD.cmd_number(40, 20, 23, OPT_CENTER, fps);
 
   
   
@@ -141,9 +113,10 @@ void loop() {
   //GD.Begin(BITMAPS);
   //model.Apply(dp);
 
-  
-  model.BatchBarsByTag();
   model.BatchNodesByTag();
+
+  model.BatchBarsByTag();
+  
 
   //model.MapBars(&debug_bar);
   

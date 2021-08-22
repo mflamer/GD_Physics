@@ -12,13 +12,13 @@ float   ScreenToModel_X(int x){return (x - (GD.w/2)) / (scale/16);}
 float   ScreenToModel_Y(int y){return (-y + (GD.h/2)) / (scale/16);}
 
 
-class DrawNode_Circle : public NodeFunct {
+class DrawNode_Basic : public NodeFunct {
 public:
-    DrawNode_Circle(int r){radius = r;}// r in subpix
+    DrawNode_Basic(int r){radius = r;}// r in subpix
     void Init(){
         GD.Begin(POINTS);
         GD.PointSize(radius);
-        GD.ColorRGB(30,30,30);
+        GD.ColorRGB(120,120,120);
     }
 	void operator()(Node* n){
 		GD.Vertex2f(ModelToScreen_X(n->pos.x), ModelToScreen_Y(n->pos.y));
@@ -33,12 +33,13 @@ public:
     void Init(){
         GD.Begin(LINES);
         GD.LineWidth(width);
+        GD.BlendFunc(SRC_ALPHA, ONE);
     }
 	void operator()(Bar* b){
         int red = b->f > 0 ? int(255 * (b->f / (b->Ult_T()))) : 0;
 		int blu = b->f < 0 ? int(255 * (b->f / (b->Ult_C()))) : 0;		
 
-		GD.ColorRGB(red+20, 20, blu+20);
+		GD.ColorRGB(red, 0, blu);
 		GD.Vertex2f(ModelToScreen_X(b->n0->pos.x), ModelToScreen_Y(b->n0->pos.y));
 		GD.Vertex2f(ModelToScreen_X(b->n1->pos.x), ModelToScreen_Y(b->n1->pos.y));
 	}
@@ -62,11 +63,12 @@ public:
 		}
 	};
 
-class ArduinoPrinter : public Printer {
+class ArduinoDebugger : public Debugger {
 	public:
-		void operator()(const char* s){Serial.print(s);}
-		void operator()(float f){Serial.print(f);}
-        void operator()(int i){Serial.print(i);}
+		void print(const char* s){Serial.print(s);}
+		void print(float f){Serial.print(f);}
+        void print(int i){Serial.print(i);}
+        int ticks(){return micros();}
 };
 
 
@@ -74,27 +76,16 @@ class ArduinoPrinter : public Printer {
 
 
 
-DrawNode_Circle draw_node(32);
-DrawBar_Stress draw_bar(32);
+DrawNode_Basic draw_node(64);
+DrawBar_Stress draw_bar(64);
 DebugPoint debug_point;
 DebugBar debug_bar;
 
 
-Printer* p = new ArduinoPrinter;
-Model model(p);
+Debugger* d = new ArduinoDebugger;
+Model model(d);
 
  
-
-// Material*   rubber;
-// Material*   concrete;
-// Material*   steel;
-// Material*   wood;
-// Material*   _rubber;
-// Material*   _concrete;
-// Material*   _steel;
-// Material*   _wood;
-// Material*   game_struct;
-
 
 
 Node* DrawBlock(float x, float y, float w, float h, Material* m){
