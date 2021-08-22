@@ -108,7 +108,7 @@ public:
 	Model(Debugger* d); 
 	~Model();
 
-	void		SetModel(float w, float h, float r);
+	void		InitModel(float w, float h, float r);
 
 	void		AddMeshToModel(Mesh* mesh, const char* name);
 	Mesh*		AddMeshToSim(const char* name);

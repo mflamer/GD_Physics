@@ -27,6 +27,23 @@ public:
     int radius;
 };
 
+class DrawNode_Bitmap : public NodeFunct {
+public:
+    DrawNode_Bitmap(int h){handle = h;}// r in subpix
+    void Init(){
+        GD.ColorRGB(0xFFFFFF);
+        GD.Begin(BITMAPS);        
+    }
+    void operator()(Node* n){
+        int x = (ModelToScreen_X(n->pos.x) / 16) - 6;//!!
+        int y = (ModelToScreen_Y(n->pos.y) / 16) - 6;//!!
+        GD.Vertex2ii( x, y, handle, 0);
+        //if(handle == 1){Serial.print("hnd = "); Serial.print(handle); Serial.print("\n");}
+    }
+
+    int handle;
+};
+
 class DrawBar_Stress : public BarFunct {
 public:
     DrawBar_Stress(int w){width = w;}// w in subpix
@@ -73,68 +90,49 @@ class ArduinoDebugger : public Debugger {
 
 
 
-
-
-
-DrawNode_Basic draw_node(64);
-DrawBar_Stress draw_bar(64);
-DebugPoint debug_point;
-DebugBar debug_bar;
-
-
-Debugger* d = new ArduinoDebugger;
-Model model(d);
-
+//DebugPoint debug_point;
+//DebugBar debug_bar;
  
 
 
-Node* DrawBlock(float x, float y, float w, float h, Material* m){
+// Node* DrawBlock(float x, float y, float w, float h, Material* m){
 
-	Node* n0 = model.AddNode(x,         y, m);
-	Node* n1 = model.AddNode(x+(1*w),   y, m);
-	Node* n2 = model.AddNode(x+(2*w),   y, m);
-	Node* n3 = model.AddNode(x+(3*w),   y, m); 
-	Node* n4 = model.AddNode(x+(4*w),   y, m);
+// 	Node* n0 = model.AddNode(x,         y, m);
+// 	Node* n1 = model.AddNode(x+(1*w),   y, m);
+// 	Node* n2 = model.AddNode(x+(2*w),   y, m);
+// 	Node* n3 = model.AddNode(x+(3*w),   y, m); 
+// 	Node* n4 = model.AddNode(x+(4*w),   y, m);
 
-	Node* n5 = model.AddNode(x,         y+h, m);
-	Node* n6 = model.AddNode(x+(1*w),   y+h, m);
-	Node* n7 = model.AddNode(x+(2*w),   y+h, m);
-	Node* n8 = model.AddNode(x+(3*w),   y+h, m); 
-	Node* n9 = model.AddNode(x+(4*w),   y+h, m);
+// 	Node* n5 = model.AddNode(x,         y+h, m);
+// 	Node* n6 = model.AddNode(x+(1*w),   y+h, m);
+// 	Node* n7 = model.AddNode(x+(2*w),   y+h, m);
+// 	Node* n8 = model.AddNode(x+(3*w),   y+h, m); 
+// 	Node* n9 = model.AddNode(x+(4*w),   y+h, m);
 
-	model.AddBar(n0, n1);
-	model.AddBar(n1, n2);
-	model.AddBar(n2, n3);
-	model.AddBar(n3, n4);
+// 	model.AddBar(n0, n1);
+// 	model.AddBar(n1, n2);
+// 	model.AddBar(n2, n3);
+// 	model.AddBar(n3, n4);
 
-	model.AddBar(n5, n6);
-	model.AddBar(n6, n7);
-	model.AddBar(n7, n8);
-	model.AddBar(n8, n9);
+// 	model.AddBar(n5, n6);
+// 	model.AddBar(n6, n7);
+// 	model.AddBar(n7, n8);
+// 	model.AddBar(n8, n9);
 
-	model.AddBar(n0, n5);
-	model.AddBar(n1, n6);
-	model.AddBar(n2, n7);
-	model.AddBar(n3, n8);
-	model.AddBar(n4, n9);
+// 	model.AddBar(n0, n5);
+// 	model.AddBar(n1, n6);
+// 	model.AddBar(n2, n7);
+// 	model.AddBar(n3, n8);
+// 	model.AddBar(n4, n9);
 
-	model.AddBar(n0, n6);
-	model.AddBar(n1, n7);
-	model.AddBar(n2, n8);
-	model.AddBar(n3, n9);
+// 	model.AddBar(n0, n6);
+// 	model.AddBar(n1, n7);
+// 	model.AddBar(n2, n8);
+// 	model.AddBar(n3, n9);
 
-	return n0;
-}
-
-// Node* DrawBlock(float x, float y, int nx, int ny, float spac, Material* mat){
-
-//   for(int i = 0; i < ny; i++){
-//     for(int j = 0; j < xy; j++){
-//       Node* n = model.AddNode(x + (j * spac), y + (i * spac), mat);
-//   }
-
-//   return n0;
+// 	return n0;
 // }
+
 
 // void DrawNodes(int n){
 // 	for(int i = 0; i < n; i++){
@@ -143,11 +141,8 @@ Node* DrawBlock(float x, float y, float w, float h, Material* m){
 // }
 
 
-
-
-
-
-
+//  File dataFile = SD.open(file_name, FILE_READ);
+//  dataFile.close(); 
 void ImportModel(Stream* stream, Model* model){          
     if(stream)
     {        

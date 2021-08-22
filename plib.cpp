@@ -90,10 +90,9 @@ float Bar::Force(){
 }
 
 
-Node* Mesh::AddNode(float x, float y, Material* m, int tag){
+Node* Mesh::AddNode(float x, float y, Material* m, int t){
 	Node* n = new Node();
-	n->pos.x = x; n->pos.y = y; n->mat = m; 	 
-	//n->m = (4/3) * 3.14159265359 * pow(radius, 3) * mat->density;
+	n->pos.x = x; n->pos.y = y; n->mat = m; n->tag = t;	 
 	nodes.push_back(n);
 	return n;
 }
@@ -117,13 +116,36 @@ Bar* Mesh::AddBar(Node* n0, Node* n1, int tag){
 
 Model::Model(Debugger* d){	
 	dbg = d;
+
 }
 
-void Model::SetModel(float w, float h, float r){
+void Model::InitModel(float w, float h, float r){
 	width = w;
 	height = h;
 	radius = r;
+
+    // D  = density in Kg/m3 
+    // E  = modulus of elasticity in Pa/m2 
+    // B  = coefficent of restitution  
+    // F  = friction coefficent
+    // YT = yield strength in tension
+    // YC = yield strength in compression
+    // UT = ultimate strength in tension
+    // UC = ultimate strength in compression
 	
+    // Setup default materials    D           E        B    F         YT          YC           UT           UC 
+    AddMaterial("rubber",        950,      50000000,  .8,   0,    12000000,   -12000000,    16000000,   -16000000);
+    AddMaterial("concrete",     2300,   25000000000,   0,   0,    16000000,   -10000000,    16000000,   -14000000);
+    AddMaterial("steel",        7840,  200000000000,   0,   0,   250000000,  -250000000,   400000000,  -400000000);
+    AddMaterial("wood",          450,   10000000000,   0,   0,    10000000,   -10000000,    11000000,   -11000000);
+    AddMaterial("_rubber",       950,       5000000,  .8,   0,     1200000,    -1200000,     1600000,    -1600000);
+    AddMaterial("_concrete",    2300,    2500000000,   0,   0,     3000000,    -5000000,     3800000,    -5000000);
+    AddMaterial("_steel",       7840,   10000000000,   0,   0,    25000000,   -25000000,    40000000,   -40000000);
+    AddMaterial("_wood",         450,    1000000000,   0,   0,     1000000,    -1000000,     1100000,    -1100000);
+
+
+
+
 }
 
 Model::~Model(){
@@ -239,9 +261,9 @@ int Model::Frame(int iters){
     }
     
     fps = 1000000 / (dbg->ticks() - fps);
-    dbg->print("t_collide = "); dbg->print(t_collide); dbg->print("\n");
-    dbg->print("t_force = "); dbg->print(t_force); dbg->print("\n");
-    dbg->print("frames/s = "); dbg->print(fps); dbg->print("\n\n");
+    //dbg->print("t_collide = "); dbg->print(t_collide); dbg->print("\n");
+    //dbg->print("t_force = "); dbg->print(t_force); dbg->print("\n");
+    //dbg->print("frames/s = "); dbg->print(fps); dbg->print("\n\n");
     return fps;
 }
 

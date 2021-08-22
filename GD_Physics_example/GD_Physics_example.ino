@@ -5,7 +5,7 @@
 
 int t_start;
 
-Material* _steel;
+Model model(new ArduinoDebugger);
 
 void setup() {
 
@@ -13,67 +13,28 @@ void setup() {
   GD.begin();
 
    //setup model
-  model.SetModel(GD.w/4, GD.h/4, 1);
-
-  //setup materials
-  // r = 5 m
-  // A = 78.54 m2 
-  // V = 523.6 m3  
-                               // D            E        B    F         YT          YC           UT           UC 
-  model.AddMaterial("rubber",     950,      50000000,  .8,   0,    12000000,   -12000000,    16000000,   -16000000);
-  model.AddMaterial("concrete",  2300,   25000000000,   0,   0,    16000000,   -10000000,    16000000,   -14000000);
-  model.AddMaterial("steel",     7840,  200000000000,   0,   0,   250000000,  -250000000,   400000000,  -400000000);
-  model.AddMaterial("wood",       450,   10000000000,   0,   0,    10000000,   -10000000,    11000000,   -11000000);
-
-  model.AddMaterial("_rubber",    950,       5000000,  .8,   0,     1200000,    -1200000,     1600000,    -1600000);
-  model.AddMaterial("_concrete", 2300,    2500000000,   0,   0,     3000000,    -5000000,     3800000,    -5000000);
-  model.AddMaterial("_steel",    7840,   10000000000,   0,   0,    25000000,   -25000000,    40000000,   -40000000);
-  model.AddMaterial("_wood",      450,    1000000000,   0,   0,     1000000,    -1000000,     1100000,    -1100000);
-
-  //rubber.mass       = 579958;       // 1100 Kg/m3 
-  //rubber.spring     = 3927000000;   // EA in Pa/m (A * 0.05GPa) 
-  //rubber.damping    = 1 500 000;      // Nm * m/s = Nm2/s ?  
-  //rubber.yield_t    = 1099560000;   // N (A * 14MPa) 
-  //rubber.yield_c    = -1099560000; 
-
-  // concrete.mass     = 1204280;       // 2300 Kg/m3 
-  // concrete.spring   = 1963500000000;   // EA in Pa/m (A * 25GPa) 
-  // concrete.damping  = 30 000 000;      // Nm * m/s = Nm2/s ?  
-  // concrete.yield_t  = 1099560000;   // 0.5 * yield_c 
-  // concrete.yield_c  = -2199120000;  // N (A * 28MPa) 
-
- 
-
-  //DrawBlock(-45, 30, 3, 3, _rubber);//->Fix_Y();
-  //DrawBlock(-25, 30, 3, 3, _concrete);//->Fix_XY();
-  //DrawBlock(5, 30, 3, 3, _steel);//->Fix_X();
-  //DrawBlock(25, 30, 3, 3, _wood);
-
-  //DrawNodes(16);
-
-  // if (!SD.begin(9)) {
-  //   Serial.println("initialization failed!");
-  //   while (1);
-  // }
-  // ImportMeshSD("parse_test.txt", &model, &rubber);
-
-  model.AddFunctToTagMap(0, &draw_node);
-  model.AddFunctToTagMap(0, &draw_bar);
   
+  model.InitModel(GD.w/4, GD.h/4, 1);
 
+  GD.BitmapHandle(0);
   GD.cmd_loadimage(0, 0);
   GD.load("block.jpg");
-  //
+  GD.BitmapHandle(1);
+  GD.cmd_loadimage(-1, 1);
+  GD.load("c_ball.png");
 
-  //  File dataFile = SD.open(file_name, FILE_READ);
-  //  dataFile.close(); 
+  //model.AddFunctToTagMap(0, new DrawNode_Basic(64));
+  model.AddFunctToTagMap(0, new DrawNode_Bitmap(0));
+  model.AddFunctToTagMap(1, new DrawNode_Bitmap(1));
+  model.AddFunctToTagMap(0, new DrawBar_Stress(64));
+  
+
+
+
   #include "mesh.h"
   ByteStream bs = ByteStream((byte*)mesh_data, strlen(mesh_data));
   ImportModel(&bs, &model);
 
-  //model.AddMeshToSim("mesh0");
-  //model.AddMeshToSim("mesh1");
-  //model.AddMeshToSim("mesh2");
 
   model.AddMeshToSim("building");
 
@@ -88,7 +49,7 @@ void loop() {
   if (GD.inputs.x != -32768 && pause == 0) {
     float x = ScreenToModel_X(GD.inputs.x);
     float y = ScreenToModel_Y(GD.inputs.y); 
-    Node* bullet = model.AddNode(x, y, 80, 0, model.GetMaterial("_steel"), 0);
+    Node* bullet = model.AddNode(x, y, 80, 0, model.GetMaterial("_steel"), 1);
     pause = 30;
   }
   if(pause > 0)pause--;
@@ -101,24 +62,13 @@ void loop() {
 
   GD.ClearColorRGB(0xe0e0e0);
   GD.Clear();
+
   GD.ColorRGB(30, 30, 30);
   GD.cmd_number(40, 20, 23, OPT_CENTER, fps);
-
-  
-  
-
-  GD.ColorRGB(240,240,240);
-  //GD.Begin(POINTS);
-  //GD.PointSize(int((1 * 64) + 0.5));
-  //GD.Begin(BITMAPS);
-  //model.Apply(dp);
 
   model.BatchNodesByTag();
 
   model.BatchBarsByTag();
-  
-
-  //model.MapBars(&debug_bar);
   
 
   GD.swap();
