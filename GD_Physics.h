@@ -44,13 +44,34 @@ public:
     int handle;
 };
 
+class DrawRotatedBitmap : public NodeFunct {
+public:
+    DrawRotatedBitmap(int h){handle = h;}// r in subpix
+    void Init(){
+        GD.ColorRGB(0xFFFFFF);
+        GD.Begin(BITMAPS);        
+    }
+    void operator()(Node* n){
+        GD.cmd_translate(F16(10),F16(10));
+        GD.cmd_rotate(DEGREES(GD.random(360)));
+        GD.cmd_translate(F16(-10), F16(-10));
+        GD.cmd_setmatrix();
+        int x = (ModelToScreen_X(n->pos.x) / 16) - 10;//!!
+        int y = (ModelToScreen_Y(n->pos.y) / 16) - 10;//!!
+        GD.Vertex2ii( x, y, handle, 0);
+        //if(handle == 1){Serial.print("hnd = "); Serial.print(handle); Serial.print("\n");}
+    }
+
+    int handle;
+};
+
 class DrawBar_Stress : public BarFunct {
 public:
     DrawBar_Stress(int w){width = w;}// w in subpix
     void Init(){
         GD.Begin(LINES);
         GD.LineWidth(width);
-        GD.BlendFunc(SRC_ALPHA, ONE);
+        //GD.BlendFunc(SRC_ALPHA, ONE);
     }
 	void operator()(Bar* b){
         int red = b->f > 0 ? int(255 * (b->f / (b->Ult_T()))) : 0;
@@ -86,6 +107,17 @@ class ArduinoDebugger : public Debugger {
 		void print(float f){Serial.print(f);}
         void print(int i){Serial.print(i);}
         int ticks(){return micros();}
+};
+
+
+class BarDestroyer : public BarFunct {
+public:
+    BarDestroyer(){;}
+    void operator()(Bar* b){
+       if(b->n0->tag < 3) b->n0->tag++;
+       if(b->n1->tag < 3) b->n1->tag++; 
+    }
+
 };
 
 

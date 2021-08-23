@@ -104,6 +104,13 @@ Node* Mesh::AddNode(float x, float y, float vx, float vy, Material* m, int tag){
 	return n;
 }
 
+// this function does not check if the node is referenced by any bars
+void Mesh::RemoveNode(Node* n){
+    std::vector<Node*>::iterator found = std::find(nodes.begin(), nodes.end(), n);
+    if(found != nodes.end()) nodes.erase(found);
+}
+
+
 Bar* Mesh::AddBar(Node* n0, Node* n1, int tag){
 	Bar* b = new Bar();
 	b->n0 = n0;
@@ -170,6 +177,7 @@ void Model::Step(float t){
 		float bf = (*b_itr)->Force();
 		//test for bar yield and remove if so
 		if((bf > (*b_itr)->Ult_T()) | (bf < (*b_itr)->Ult_C())) {
+            if(barDestructEvent) (*barDestructEvent)(*b_itr);
 			delete *b_itr;
 			b_itr = bars.erase(b_itr);
 			if(b_itr == bars.end()) break;
@@ -225,6 +233,10 @@ void Model::Collisions(){
 
 				(*m)->ApplyDampedForce(collision_f);
 				(*n)->ApplyDampedForce(-collision_f);
+                if(NodeCollisionEvent){
+                    (*NodeCollisionEvent)(*n);
+                    (*NodeCollisionEvent)(*m);
+                } 
 			}
 		}		
 
@@ -309,7 +321,8 @@ Mesh* Model::AddMeshToSim(const char* name){
 }
 
 Mesh* Model::RemoveMeshFromSim(const char* name){
-
+    // need to implement
+    return NULL;
 }
 
 

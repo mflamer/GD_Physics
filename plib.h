@@ -77,6 +77,7 @@ public:
 	int			tag;
 };
 
+
 class NodeFunct{
 public:
 	virtual void operator()(Node* n);
@@ -93,6 +94,7 @@ class Mesh : public Debuggable{
 public:
 	Node* 		AddNode(float x, float y, Material* m, int tag = 0);
 	Node* 		AddNode(float x, float y, float vx, float vy, Material* m, int tag = 0);
+	void		RemoveNode(Node* n);
 	Bar*		AddBar(Node* n0, Node* n1, int tag = 0);
 	void 		Apply(NodeFunct& f);
 	void 		Apply(BarFunct& f);
@@ -109,6 +111,8 @@ public:
 	~Model();
 
 	void		InitModel(float w, float h, float r);
+	void		SetNodeCollisionEvent(NodeFunct* e){NodeCollisionEvent = e;}
+	void		SetBarDestructionEvent(BarFunct* e){barDestructEvent = e;}
 
 	void		AddMeshToModel(Mesh* mesh, const char* name);
 	Mesh*		AddMeshToSim(const char* name);
@@ -157,6 +161,9 @@ private:
 	std::map<std::string, Material*>	materials;
 	std::map<int, NodeFunct*>			nodeTagMap;
 	std::map<int, BarFunct*>			barTagMap;
+	NodeFunct*							NodeCollisionEvent;
+	BarFunct*							barDestructEvent;
+
 
 };
 
