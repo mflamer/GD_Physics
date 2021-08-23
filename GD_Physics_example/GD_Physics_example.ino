@@ -22,6 +22,7 @@ void setup() {
   GD.BitmapHandle(0);
   GD.cmd_loadimage(0, 0);
   GD.load("c_ball.png");
+
   GD.BitmapHandle(1);
   GD.cmd_loadimage(-1, 0); // cell 0
   GD.load("blk.png");
@@ -33,17 +34,17 @@ void setup() {
   GD.load("blk_d1.png");
 
   GD.BitmapHandle(4);
-  GD.cmd_loadimage(-1, 0); // cell 2
+  GD.cmd_loadimage(-1, 0);
   GD.load("skyline.png");
   
   
 
   //model.AddFunctToTagMap(0, new DrawNode_Basic(64));
-  model.AddFunctToTagMap(0, new DrawNode_Bitmap(0));  // cannon ball
+  model.AddFunctToTagMap(0, new DrawNode_BitmapDelete(0, &model));  // cannon ball
 
   model.AddFunctToTagMap(1, new DrawNode_Bitmap(1));  // brick
   model.AddFunctToTagMap(2, new DrawNode_Bitmap(2));  // brick
-  model.AddFunctToTagMap(3, new DrawRotatedBitmap(3));  // brick  
+  model.AddFunctToTagMap(3, new DrawRandomRotatedBitmap(3));  // brick  
 
   model.AddFunctToTagMap(0, new DrawBar_Stress(16));
   

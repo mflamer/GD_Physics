@@ -44,16 +44,41 @@ public:
     int handle;
 };
 
-class DrawRotatedBitmap : public NodeFunct {
+class DrawNode_BitmapDelete : public NodeFunct {
 public:
-    DrawRotatedBitmap(int h){handle = h;}// r in subpix
+    DrawNode_BitmapDelete(int h, Model* m){handle = h; model = m;}// r in subpix
     void Init(){
         GD.ColorRGB(0xFFFFFF);
         GD.Begin(BITMAPS);        
     }
     void operator()(Node* n){
+        int x = (ModelToScreen_X(n->pos.x) / 16) - 6;//!!
+        int y = (ModelToScreen_Y(n->pos.y) / 16) - 6;//!!
+        GD.Vertex2ii( x, y, handle, 0);
+        if(abs(n->vel.x) < 0.3 && abs(n->vel.y) < 0.3){
+            model->RemoveNode(n);
+        }
+        //if(handle == 1){Serial.print("hnd = "); Serial.print(handle); Serial.print("\n");}
+    }
+
+    int handle;
+    Model* model;
+};
+
+class DrawRandomRotatedBitmap : public NodeFunct {
+public:
+    DrawRandomRotatedBitmap(int h){handle = h;}// r in subpix
+    void Init(){
+        GD.ColorRGB(0xFFFFFF);
+        GD.Begin(BITMAPS);        
+    }
+    void operator()(Node* n){
+        auto itr = angles.find(n);
+        if(itr == angles.end()){
+            angles[n] = GD.random(360);
+        }
         GD.cmd_translate(F16(10),F16(10));
-        GD.cmd_rotate(DEGREES(GD.random(360)));
+        GD.cmd_rotate(DEGREES(angles[n]));
         GD.cmd_translate(F16(-10), F16(-10));
         GD.cmd_setmatrix();
         int x = (ModelToScreen_X(n->pos.x) / 16) - 10;//!!
@@ -63,6 +88,7 @@ public:
     }
 
     int handle;
+    std::map<Node*, int> angles;
 };
 
 class DrawBar_Stress : public BarFunct {
@@ -224,3 +250,20 @@ void ImportModel(Stream* stream, Model* model){
     }
 }
 
+
+
+
+/// general graphics stuff, move to a new file soon
+
+
+
+
+class Drawable {
+public:
+
+
+
+
+private:
+
+};

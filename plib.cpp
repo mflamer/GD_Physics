@@ -107,7 +107,9 @@ Node* Mesh::AddNode(float x, float y, float vx, float vy, Material* m, int tag){
 // this function does not check if the node is referenced by any bars
 void Mesh::RemoveNode(Node* n){
     std::vector<Node*>::iterator found = std::find(nodes.begin(), nodes.end(), n);
-    if(found != nodes.end()) nodes.erase(found);
+    if(found != nodes.end()){
+        nodes.erase(found);
+    } 
 }
 
 
