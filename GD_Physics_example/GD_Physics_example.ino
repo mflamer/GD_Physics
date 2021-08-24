@@ -72,7 +72,8 @@ void loop() {
   if (GD.inputs.x != -32768 && pause == 0) {
     float x = ScreenToModel_X(GD.inputs.x);
     float y = ScreenToModel_Y(GD.inputs.y); 
-    Node* bullet = model.AddNode(x, y, 80, 0, model.GetMaterial("_steel"), 0);
+    float vx = x > 0 ? -80 : 80;
+    Node* bullet = model.AddNode(x, y, vx, 0, model.GetMaterial("_steel"), 0);
     pause = 10;
   }
   if(pause > 0)pause--;

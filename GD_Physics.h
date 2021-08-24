@@ -18,7 +18,7 @@ public:
     void Init(){
         GD.Begin(POINTS);
         GD.PointSize(radius);
-        GD.ColorRGB(120,120,120);
+        GD.ColorRGB(20,20,20);
     }
 	void operator()(Node* n){
 		GD.Vertex2f(ModelToScreen_X(n->pos.x), ModelToScreen_Y(n->pos.y));
@@ -103,7 +103,7 @@ public:
         int red = b->f > 0 ? int(255 * (b->f / (b->Ult_T()))) : 0;
 		int blu = b->f < 0 ? int(255 * (b->f / (b->Ult_C()))) : 0;		
 
-		GD.ColorRGB(red, 0, blu);
+		GD.ColorRGB(red+20, 20, blu+20);
 		GD.Vertex2f(ModelToScreen_X(b->n0->pos.x), ModelToScreen_Y(b->n0->pos.y));
 		GD.Vertex2f(ModelToScreen_X(b->n1->pos.x), ModelToScreen_Y(b->n1->pos.y));
 	}
@@ -145,59 +145,6 @@ public:
     }
 
 };
-
-
-
-//DebugPoint debug_point;
-//DebugBar debug_bar;
- 
-
-
-// Node* DrawBlock(float x, float y, float w, float h, Material* m){
-
-// 	Node* n0 = model.AddNode(x,         y, m);
-// 	Node* n1 = model.AddNode(x+(1*w),   y, m);
-// 	Node* n2 = model.AddNode(x+(2*w),   y, m);
-// 	Node* n3 = model.AddNode(x+(3*w),   y, m); 
-// 	Node* n4 = model.AddNode(x+(4*w),   y, m);
-
-// 	Node* n5 = model.AddNode(x,         y+h, m);
-// 	Node* n6 = model.AddNode(x+(1*w),   y+h, m);
-// 	Node* n7 = model.AddNode(x+(2*w),   y+h, m);
-// 	Node* n8 = model.AddNode(x+(3*w),   y+h, m); 
-// 	Node* n9 = model.AddNode(x+(4*w),   y+h, m);
-
-// 	model.AddBar(n0, n1);
-// 	model.AddBar(n1, n2);
-// 	model.AddBar(n2, n3);
-// 	model.AddBar(n3, n4);
-
-// 	model.AddBar(n5, n6);
-// 	model.AddBar(n6, n7);
-// 	model.AddBar(n7, n8);
-// 	model.AddBar(n8, n9);
-
-// 	model.AddBar(n0, n5);
-// 	model.AddBar(n1, n6);
-// 	model.AddBar(n2, n7);
-// 	model.AddBar(n3, n8);
-// 	model.AddBar(n4, n9);
-
-// 	model.AddBar(n0, n6);
-// 	model.AddBar(n1, n7);
-// 	model.AddBar(n2, n8);
-// 	model.AddBar(n3, n9);
-
-// 	return n0;
-// }
-
-
-// void DrawNodes(int n){
-// 	for(int i = 0; i < n; i++){
-// 		model.AddNode(-200 + i * 15, i * 5, concrete);
-// 	}
-// }
-
 
 //  File dataFile = SD.open(file_name, FILE_READ);
 //  dataFile.close(); 

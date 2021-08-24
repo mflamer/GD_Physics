@@ -223,23 +223,24 @@ void Model::Collisions(){
 	}
 	for(n = nodes.begin(); n != nodes.end(); n++){		
 		for(m = n + 1; m != nodes.end(); m++){
-			if((*m)->pos.x - (*n)->pos.x > (radius * 2)) break;
-			
-			float d = (*m)->pos.Distance((*n)->pos);
-			if(d < radius * 2){
-				float k = (((*m)->mat->spring + (*n)->mat->spring) * 0.5) / radius;
-				float f = ((2 * radius) - d) * k;
-				V2 collision_f;  
-				collision_f.x = f * (((*m)->pos.x - (*n)->pos.x) / d);
-				collision_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
+			if((*m)->pos.x - (*n)->pos.x > (radius * 2)) break;			
+            if((*m)->pos.y - (*n)->pos.y < (radius * 2)){
+    			float d = (*m)->pos.Distance((*n)->pos);
+    			if(d < radius * 2){
+    				float k = (((*m)->mat->spring + (*n)->mat->spring) * 0.5) / (2 * radius);
+    				float f = ((2 * radius) - d) * k;
+    				V2 collision_f;  
+    				collision_f.x = f * (((*m)->pos.x - (*n)->pos.x) / d);
+    				collision_f.y = f * (((*m)->pos.y - (*n)->pos.y) / d); 
 
-				(*m)->ApplyDampedForce(collision_f);
-				(*n)->ApplyDampedForce(-collision_f);
-                if(NodeCollisionEvent){
-                    (*NodeCollisionEvent)(*n);
-                    (*NodeCollisionEvent)(*m);
-                } 
-			}
+    				(*m)->ApplyDampedForce(collision_f);
+    				(*n)->ApplyDampedForce(-collision_f);
+                    if(NodeCollisionEvent){
+                        (*NodeCollisionEvent)(*n);
+                        (*NodeCollisionEvent)(*m);
+                    } 
+    			}
+            }
 		}		
 
 		// test left and right model edges
@@ -275,8 +276,8 @@ int Model::Frame(int iters){
     }
     
     fps = 1000000 / (dbg->ticks() - fps);
-    //dbg->print("t_collide = "); dbg->print(t_collide); dbg->print("\n");
-    //dbg->print("t_force = "); dbg->print(t_force); dbg->print("\n");
+    dbg->print("t_collide = "); dbg->print(t_collide); dbg->print("\n");
+    dbg->print("t_force = "); dbg->print(t_force); dbg->print("\n");
     //dbg->print("frames/s = "); dbg->print(fps); dbg->print("\n\n");
     return fps;
 }
@@ -301,7 +302,7 @@ Material* Model::AddMaterial(const char* N, float D, float E, float B, float F, 
 
 Material* Model::GetMaterial(const char* name){
 	Material* m = materials[name];
-	dbg->print("Got material "); dbg->print(name); dbg->print(" = "); dbg->print((int)m); dbg->print("\n");
+	//dbg->print("Got material "); dbg->print(name); dbg->print(" = "); dbg->print((int)m); dbg->print("\n");
 	return m;
 }
 
