@@ -39,14 +39,17 @@ void setup() {
   
   
 
-  //model.AddFunctToTagMap(0, new DrawNode_Basic(64));
+  
   model.AddFunctToTagMap(0, new DrawNode_BitmapDelete(0, &model));  // cannon ball
 
-  model.AddFunctToTagMap(1, new DrawNode_Bitmap(1));  // brick
-  model.AddFunctToTagMap(2, new DrawNode_Bitmap(2));  // brick
-  model.AddFunctToTagMap(3, new DrawRandomRotatedBitmap(3));  // brick  
+  model.AddFunctToTagMap(1, new DrawNode_Bitmap(1));  // block
+  model.AddFunctToTagMap(2, new DrawNode_Bitmap(2));  // block cracked
+  model.AddFunctToTagMap(3, new DrawRandomRotatedBitmap(3)); // block rubble  
 
-  model.AddFunctToTagMap(0, new DrawBar_Stress(16));
+  model.AddFunctToTagMap(4, new DrawNode_Basic(64)); 
+
+  model.AddFunctToTagMap(0, new DrawBar_Stress(16)); // reinforcing behind concrete
+  model.AddFunctToTagMap(1, new DrawBar_Stress(36)); // exposed steelwork
   
   model.SetBarDestructionEvent(new BarDestroyer());
 
@@ -70,7 +73,7 @@ void loop() {
     float x = ScreenToModel_X(GD.inputs.x);
     float y = ScreenToModel_Y(GD.inputs.y); 
     Node* bullet = model.AddNode(x, y, 80, 0, model.GetMaterial("_steel"), 0);
-    pause = 30;
+    pause = 10;
   }
   if(pause > 0)pause--;
   else pause = 0; 

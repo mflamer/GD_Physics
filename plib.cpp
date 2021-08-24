@@ -301,7 +301,7 @@ Material* Model::AddMaterial(const char* N, float D, float E, float B, float F, 
 
 Material* Model::GetMaterial(const char* name){
 	Material* m = materials[name];
-	//dbg->print("Got material "); dbg->print(name); dbg->print(" = "); dbg->print((int)m); dbg->print("\n");
+	dbg->print("Got material "); dbg->print(name); dbg->print(" = "); dbg->print((int)m); dbg->print("\n");
 	return m;
 }
 
@@ -311,8 +311,7 @@ void Model::AddMeshToModel(Mesh* mesh, const char* name){
 }
 
 Mesh* Model::AddMeshToSim(const char* name){
-	Mesh* mesh = meshes[name];
-	dbg->print(name);dbg->print((int)mesh);
+	Mesh* mesh = meshes[name];    
 	if(mesh){
 		nodes.insert(nodes.end(), mesh->nodes.begin(), mesh->nodes.end());
 		bars.insert(bars.end(), mesh->bars.begin(), mesh->bars.end());

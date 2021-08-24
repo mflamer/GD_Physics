@@ -227,9 +227,9 @@ void ImportModel(Stream* stream, Model* model){
             }
             else if(c == 'B'){ // bars
                 int idx_n0 = stream->parseInt();
-                int idx_n1 = stream->parseInt();             
-                Node* n0 = mesh->GetNodeIdx(idx_n0);
-                Node* n1 = mesh->GetNodeIdx(idx_n1);
+                int idx_n1 = stream->parseInt();                        
+                Node* n0 = mesh->GetNodeIdx(idx_n0);               
+                Node* n1 = mesh->GetNodeIdx(idx_n1);                
                 mesh->AddBar(n0, n1, tag);
             }
             else if(c == 'M'){ // material
