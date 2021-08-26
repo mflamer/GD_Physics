@@ -24,6 +24,7 @@ struct V2 : public Debuggable{
 			V2(){;}
 			V2(float _x, float _y){x = _x; y = _y;}
 	float 	Distance(V2& v);
+	float   DistanceSq(V2& v);
 	float 	Mag();
 	float 	Dot(const V2& v);
 	V2	  	Unit();

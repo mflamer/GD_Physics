@@ -11,6 +11,11 @@ float V2::Distance(V2& v)
 	return sqrt(pow(x - v.x, 2) + pow(y - v.y, 2));
 }
 
+float V2::DistanceSq(V2& v)
+{ 
+    return (x - v.x) * (x - v.x) + (y - v.y) * (y - v.y);
+}
+
 float V2::Mag(){
 	return sqrt(x * x + y * y);
 }
@@ -216,6 +221,7 @@ void Model::Collisions(){
 	sort(nodes.begin(), nodes.end(), SortNodes_X());
 	std::vector<Node*>::iterator n;
 	std::vector<Node*>::iterator m;
+    float diameterSq = radius * 2 * radius * 2;
 	//clear forces
 	for(n = nodes.begin(); n != nodes.end(); n++){ 
 		if((*n)->force.x != 0xFFFFFFFF)(*n)->force.x = 0;
@@ -224,9 +230,9 @@ void Model::Collisions(){
 	for(n = nodes.begin(); n != nodes.end(); n++){		
 		for(m = n + 1; m != nodes.end(); m++){
 			if((*m)->pos.x - (*n)->pos.x > (radius * 2)) break;			
-            if((*m)->pos.y - (*n)->pos.y < (radius * 2)){
-    			float d = (*m)->pos.Distance((*n)->pos);
-    			if(d < radius * 2){
+            if((*m)->pos.y - (*n)->pos.y < (radius * 2)){             		
+    			if((*m)->pos.DistanceSq((*n)->pos) < diameterSq){
+                    float d = (*m)->pos.Distance((*n)->pos);
     				float k = (((*m)->mat->spring + (*n)->mat->spring) * 0.5) / (2 * radius);
     				float f = ((2 * radius) - d) * k;
     				V2 collision_f;  
